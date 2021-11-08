@@ -4,7 +4,9 @@ import java.util.Date;
 
 public class BuyOrder {
 
-    private String companyCode;
+    private Integer id;
+
+    private Integer companyId;
 
     private String owner;
 
@@ -14,8 +16,9 @@ public class BuyOrder {
 
     private Date date;
 
-    public BuyOrder(String companyCode, String owner, Integer numberOfUnits, Double pricePerUnit, Date date) {
-        this.companyCode = companyCode;
+    public BuyOrder(Integer id, Integer companyId, String owner, Integer numberOfUnits, Double pricePerUnit, Date date) {
+        this.id = id;
+        this.companyId = companyId;
         this.owner = owner;
         this.numberOfUnits = numberOfUnits;
         this.pricePerUnit = pricePerUnit;
@@ -26,12 +29,20 @@ public class BuyOrder {
 
     }
 
-    public String getCompanyCode() {
-        return companyCode;
+    public Integer getId() {
+        return id;
     }
 
-    public void setCompanyCode(String companyCode) {
-        this.companyCode = companyCode;
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
     }
 
     public String getOwner() {

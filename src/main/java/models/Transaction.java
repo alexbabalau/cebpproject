@@ -1,26 +1,37 @@
 package models;
 
 public class Transaction {
+    private Integer id;
+
     private String buyer;
 
     private String seller;
 
-    private String companyCode;
+    private Integer companyId;
 
     private Integer numberOfUnits;
 
     private Double pricePerUnit;
 
-    public Transaction(String buyer, String seller, String companyCode, Integer numberOfUnits, Double pricePerUnit) {
+    public Transaction(Integer id, String buyer, String seller, Integer companyId, Integer numberOfUnits, Double pricePerUnit) {
+        this.id = id;
         this.buyer = buyer;
         this.seller = seller;
-        this.companyCode = companyCode;
+        this.companyId = companyId;
         this.numberOfUnits = numberOfUnits;
         this.pricePerUnit = pricePerUnit;
     }
 
     public Transaction(){
 
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getBuyer() {
@@ -39,12 +50,12 @@ public class Transaction {
         this.seller = seller;
     }
 
-    public String getCompanyCode() {
-        return companyCode;
+    public Integer getCompanyId() {
+        return companyId;
     }
 
-    public void setCompanyCode(String companyCode) {
-        this.companyCode = companyCode;
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
     }
 
     public Integer getNumberOfUnits() {

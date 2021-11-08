@@ -1,31 +1,23 @@
 package models;
 
-import java.util.Date;
-
-public class SellOrder {
+public class CompanyShare {
 
     private Integer id;
-
-    private Integer companyId;
 
     private String owner;
 
     private Integer numberOfUnits;
 
-    private Double pricePerUnit;
+    private Integer companyId;
 
-    private Date date;
-
-    public SellOrder(Integer id, Integer companyId, String owner, Integer numberOfUnits, Double pricePerUnit, Date date) {
+    public CompanyShare(Integer id, String owner, Integer companyId, Integer numberOfUnits) {
         this.id = id;
-        this.companyId = companyId;
         this.owner = owner;
+        this.companyId = companyId;
         this.numberOfUnits = numberOfUnits;
-        this.pricePerUnit = pricePerUnit;
-        this.date = date;
     }
 
-    public SellOrder(){
+    public CompanyShare(){
 
     }
 
@@ -59,21 +51,5 @@ public class SellOrder {
 
     public void setNumberOfUnits(Integer numberOfUnits) {
         this.numberOfUnits = numberOfUnits;
-    }
-
-    public Double getPricePerUnit() {
-        return pricePerUnit;
-    }
-
-    public void setPricePerUnit(Double pricePerUnit) {
-        this.pricePerUnit = pricePerUnit;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
     }
 }

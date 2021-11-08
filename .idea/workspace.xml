@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="dd64bafb-4c8d-489d-b2e7-bff5f43bba6b" name="Default Changelist" comment="" />
+    <list default="true" id="dd64bafb-4c8d-489d-b2e7-bff5f43bba6b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/models/CompanyShare.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/server/ClientHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/server/Server.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/models/BuyOrder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/models/BuyOrder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/models/Company.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/models/Company.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/models/SellOrder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/models/SellOrder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/models/Transaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/models/Transaction.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,7 +23,16 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="203MumYHuc0dXLndrFjknVslwP3" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -22,7 +40,10 @@
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/.." />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../cebp-stocks-daj" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.0" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -38,13 +59,31 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="446" y="49" key="#com.intellij.ide.util.MemberChooser" timestamp="1635270564600">
+    <state x="233" y="0" key="#Project_Structure" timestamp="1636306022870">
+      <screen x="0" y="0" width="1280" height="680" />
+    </state>
+    <state x="233" y="0" key="#Project_Structure/0.0.1280.680@0.0.1280.680" timestamp="1636306022870" />
+    <state x="446" y="49" key="#com.intellij.ide.util.MemberChooser" timestamp="1636406299276">
       <screen x="0" y="0" width="1280" height="680" />
     </state>
     <state x="446" y="49" key="#com.intellij.ide.util.MemberChooser/0.0.1280.680/1920.0.1920.1040@0.0.1280.680" timestamp="1635270564600" />
-    <state x="337" y="165" key="com.intellij.ide.util.TipDialog" timestamp="1635269047183">
+    <state x="446" y="49" key="#com.intellij.ide.util.MemberChooser/0.0.1280.680@0.0.1280.680" timestamp="1636406299276" />
+    <state x="236" y="0" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1636404582801">
+      <screen x="0" y="0" width="1280" height="680" />
+    </state>
+    <state x="236" y="0" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.0.1280.680@0.0.1280.680" timestamp="1636404582801" />
+    <state x="421" y="96" key="FileChooserDialogImpl" timestamp="1636244603105">
+      <screen x="0" y="0" width="1280" height="680" />
+    </state>
+    <state x="421" y="96" key="FileChooserDialogImpl/0.0.1280.680@0.0.1280.680" timestamp="1636244603105" />
+    <state x="337" y="165" key="com.intellij.ide.util.TipDialog" timestamp="1636244589761">
       <screen x="0" y="0" width="1280" height="680" />
     </state>
     <state x="337" y="165" key="com.intellij.ide.util.TipDialog/0.0.1280.680/1920.0.1920.1040@0.0.1280.680" timestamp="1635269047183" />
+    <state x="337" y="165" key="com.intellij.ide.util.TipDialog/0.0.1280.680@0.0.1280.680" timestamp="1636244589761" />
+    <state x="303" y="1" width="672" height="678" key="search.everywhere.popup" timestamp="1636406252954">
+      <screen x="0" y="0" width="1280" height="680" />
+    </state>
+    <state x="303" y="1" width="672" height="678" key="search.everywhere.popup/0.0.1280.680@0.0.1280.680" timestamp="1636406252954" />
   </component>
 </project>
