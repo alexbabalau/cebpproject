@@ -2,13 +2,13 @@ package models;
 
 import java.util.Date;
 
-public class BuyOrder {
+public class BuyOrder extends VersionedEntity{
 
     private Integer id;
 
     private Integer companyId;
 
-    private String owner;
+    private Integer ownerId;
 
     private Integer numberOfUnits;
 
@@ -16,10 +16,11 @@ public class BuyOrder {
 
     private Date date;
 
-    public BuyOrder(Integer id, Integer companyId, String owner, Integer numberOfUnits, Double pricePerUnit, Date date) {
+    public BuyOrder(Integer version, Integer id, Integer companyId, Integer ownerId, Integer numberOfUnits, Double pricePerUnit, Date date) {
+        super(version);
         this.id = id;
         this.companyId = companyId;
-        this.owner = owner;
+        this.ownerId = ownerId;
         this.numberOfUnits = numberOfUnits;
         this.pricePerUnit = pricePerUnit;
         this.date = date;
@@ -45,12 +46,12 @@ public class BuyOrder {
         this.companyId = companyId;
     }
 
-    public String getOwner() {
-        return owner;
+    public Integer getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setOwnerId(Integer ownerId) {
+        this.ownerId = ownerId;
     }
 
     public Integer getNumberOfUnits() {

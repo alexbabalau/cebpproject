@@ -1,13 +1,14 @@
 package models;
 
-public class Company {
+public class Company extends VersionedEntity{
 
     private Integer id;
     private String code;
     private String name;
     private String sector;
 
-    public Company(Integer id, String code, String name, String sector) {
+    public Company(Integer version, Integer id, String code, String name, String sector) {
+        super(version);
         this.id = id;
         this.code = code;
         this.name = name;

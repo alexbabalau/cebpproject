@@ -1,11 +1,11 @@
 package models;
 
-public class Transaction {
+public class Transaction extends VersionedEntity{
     private Integer id;
 
-    private String buyer;
+    private Integer buyerId;
 
-    private String seller;
+    private Integer sellerId;
 
     private Integer companyId;
 
@@ -13,10 +13,11 @@ public class Transaction {
 
     private Double pricePerUnit;
 
-    public Transaction(Integer id, String buyer, String seller, Integer companyId, Integer numberOfUnits, Double pricePerUnit) {
+    public Transaction(Integer version, Integer id, Integer buyerId, Integer sellerId, Integer companyId, Integer numberOfUnits, Double pricePerUnit) {
+        super(version);
         this.id = id;
-        this.buyer = buyer;
-        this.seller = seller;
+        this.buyerId = buyerId;
+        this.sellerId = sellerId;
         this.companyId = companyId;
         this.numberOfUnits = numberOfUnits;
         this.pricePerUnit = pricePerUnit;
@@ -34,20 +35,20 @@ public class Transaction {
         this.id = id;
     }
 
-    public String getBuyer() {
-        return buyer;
+    public Integer getBuyerId() {
+        return buyerId;
     }
 
-    public void setBuyer(String buyer) {
-        this.buyer = buyer;
+    public void setBuyerId(Integer buyerId) {
+        this.buyerId = buyerId;
     }
 
-    public String getSeller() {
-        return seller;
+    public Integer getSellerId() {
+        return sellerId;
     }
 
-    public void setSeller(String seller) {
-        this.seller = seller;
+    public void setSellerId(Integer sellerId) {
+        this.sellerId = sellerId;
     }
 
     public Integer getCompanyId() {

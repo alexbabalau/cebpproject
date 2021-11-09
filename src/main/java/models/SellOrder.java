@@ -1,14 +1,16 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
-public class SellOrder {
+public class SellOrder extends VersionedEntity{
 
     private Integer id;
 
     private Integer companyId;
 
-    private String owner;
+    private Integer ownerId;
 
     private Integer numberOfUnits;
 
@@ -16,10 +18,11 @@ public class SellOrder {
 
     private Date date;
 
-    public SellOrder(Integer id, Integer companyId, String owner, Integer numberOfUnits, Double pricePerUnit, Date date) {
+    public SellOrder(Integer version, Integer id, Integer companyId, Integer ownerId, Integer numberOfUnits, Double pricePerUnit, Date date) {
+        super(version);
         this.id = id;
         this.companyId = companyId;
-        this.owner = owner;
+        this.ownerId = ownerId;
         this.numberOfUnits = numberOfUnits;
         this.pricePerUnit = pricePerUnit;
         this.date = date;
@@ -27,6 +30,19 @@ public class SellOrder {
 
     public SellOrder(){
 
+    }
+
+    public static SellOrder getSellOrderFromResultSet(ResultSet resultSet) throws SQLException {
+        SellOrder sellOrder = new SellOrder();
+        sellOrder.setId(resultSet.getInt("id"));
+        sellOrder.setCompanyId(resultSet.getInt("company_id"));
+        sellOrder.setDate(resultSet.getDate("date"));
+        sellOrder.setOwnerId(resultSet.getInt("owner_id"));
+        sellOrder.setNumberOfUnits(resultSet.getInt("number_of_units"));
+        sellOrder.setPricePerUnit(resultSet.getDouble("price_per_unit"));
+        sellOrder.setVersion(resultSet.getInt("version"));
+
+        return sellOrder;
     }
 
     public Integer getId() {
@@ -45,12 +61,12 @@ public class SellOrder {
         this.companyId = companyId;
     }
 
-    public String getOwner() {
-        return owner;
+    public Integer getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setOwnerId(Integer ownerId) {
+        this.ownerId = ownerId;
     }
 
     public Integer getNumberOfUnits() {
@@ -75,5 +91,17 @@ public class SellOrder {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        return "SellOrder{" +
+                "id=" + id +
+                ", companyId=" + companyId +
+                ", ownerId=" + ownerId +
+                ", numberOfUnits=" + numberOfUnits +
+                ", pricePerUnit=" + pricePerUnit +
+                ", date=" + date +
+                '}';
     }
 }

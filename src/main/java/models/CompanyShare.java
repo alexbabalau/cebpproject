@@ -1,18 +1,19 @@
 package models;
 
-public class CompanyShare {
+public class CompanyShare extends VersionedEntity{
 
     private Integer id;
 
-    private String owner;
+    private Integer ownerId;
 
     private Integer numberOfUnits;
 
     private Integer companyId;
 
-    public CompanyShare(Integer id, String owner, Integer companyId, Integer numberOfUnits) {
+    public CompanyShare(Integer version, Integer id, Integer ownerId, Integer companyId, Integer numberOfUnits) {
+        super(version);
         this.id = id;
-        this.owner = owner;
+        this.ownerId = ownerId;
         this.companyId = companyId;
         this.numberOfUnits = numberOfUnits;
     }
@@ -37,12 +38,12 @@ public class CompanyShare {
         this.companyId = companyId;
     }
 
-    public String getOwner() {
-        return owner;
+    public Integer getOwnerId() {
+        return ownerId;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setOwnerId(Integer ownerId) {
+        this.ownerId = ownerId;
     }
 
     public Integer getNumberOfUnits() {
