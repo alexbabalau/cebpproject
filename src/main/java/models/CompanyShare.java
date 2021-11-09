@@ -1,32 +1,24 @@
 package models;
 
-import java.util.Date;
-
-public class BuyOrder extends VersionedEntity{
+public class CompanyShare extends VersionedEntity{
 
     private Integer id;
-
-    private Integer companyId;
 
     private Integer ownerId;
 
     private Integer numberOfUnits;
 
-    private Double pricePerUnit;
+    private Integer companyId;
 
-    private Date date;
-
-    public BuyOrder(Integer version, Integer id, Integer companyId, Integer ownerId, Integer numberOfUnits, Double pricePerUnit, Date date) {
+    public CompanyShare(Integer version, Integer id, Integer ownerId, Integer companyId, Integer numberOfUnits) {
         super(version);
         this.id = id;
-        this.companyId = companyId;
         this.ownerId = ownerId;
+        this.companyId = companyId;
         this.numberOfUnits = numberOfUnits;
-        this.pricePerUnit = pricePerUnit;
-        this.date = date;
     }
 
-    public BuyOrder(){
+    public CompanyShare(){
 
     }
 
@@ -60,21 +52,5 @@ public class BuyOrder extends VersionedEntity{
 
     public void setNumberOfUnits(Integer numberOfUnits) {
         this.numberOfUnits = numberOfUnits;
-    }
-
-    public Double getPricePerUnit() {
-        return pricePerUnit;
-    }
-
-    public void setPricePerUnit(Double pricePerUnit) {
-        this.pricePerUnit = pricePerUnit;
-    }
-
-    public void setDate(Date date){
-        this.date = date;
-    }
-
-    public Date getDate(){
-        return this.date;
     }
 }

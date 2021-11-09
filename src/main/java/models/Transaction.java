@@ -1,20 +1,24 @@
 package models;
 
-public class Transaction {
-    private String buyer;
+public class Transaction extends VersionedEntity{
+    private Integer id;
 
-    private String seller;
+    private Integer buyerId;
 
-    private String companyCode;
+    private Integer sellerId;
+
+    private Integer companyId;
 
     private Integer numberOfUnits;
 
     private Double pricePerUnit;
 
-    public Transaction(String buyer, String seller, String companyCode, Integer numberOfUnits, Double pricePerUnit) {
-        this.buyer = buyer;
-        this.seller = seller;
-        this.companyCode = companyCode;
+    public Transaction(Integer version, Integer id, Integer buyerId, Integer sellerId, Integer companyId, Integer numberOfUnits, Double pricePerUnit) {
+        super(version);
+        this.id = id;
+        this.buyerId = buyerId;
+        this.sellerId = sellerId;
+        this.companyId = companyId;
         this.numberOfUnits = numberOfUnits;
         this.pricePerUnit = pricePerUnit;
     }
@@ -23,28 +27,36 @@ public class Transaction {
 
     }
 
-    public String getBuyer() {
-        return buyer;
+    public Integer getId() {
+        return id;
     }
 
-    public void setBuyer(String buyer) {
-        this.buyer = buyer;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public String getSeller() {
-        return seller;
+    public Integer getBuyerId() {
+        return buyerId;
     }
 
-    public void setSeller(String seller) {
-        this.seller = seller;
+    public void setBuyerId(Integer buyerId) {
+        this.buyerId = buyerId;
     }
 
-    public String getCompanyCode() {
-        return companyCode;
+    public Integer getSellerId() {
+        return sellerId;
     }
 
-    public void setCompanyCode(String companyCode) {
-        this.companyCode = companyCode;
+    public void setSellerId(Integer sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public Integer getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
     }
 
     public Integer getNumberOfUnits() {
