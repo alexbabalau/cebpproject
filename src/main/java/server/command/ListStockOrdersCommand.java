@@ -1,6 +1,6 @@
 package server.command;
 
-import dao.OrderDao;
+import dao.OrderService;
 import models.SellOrder;
 import models.User;
 
@@ -8,10 +8,10 @@ import java.util.List;
 
 public class ListStockOrdersCommand implements Command {
 
-    private OrderDao orderDao = OrderDao.getInstance();
+    private OrderService orderService = OrderService.getInstance();
 
     public String runCommand(User currentUser, String[] args) {
-        List<SellOrder> sellOrders = orderDao.getCompanySellOrders(args[1]);
+        List<SellOrder> sellOrders = orderService.getCompanySellOrders(args[1]);
         StringBuilder result = new StringBuilder();
 
         result.append("SELL ORDERS\n");

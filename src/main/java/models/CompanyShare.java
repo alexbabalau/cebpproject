@@ -1,5 +1,9 @@
 package models;
 
+import javax.xml.transform.Result;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class CompanyShare extends VersionedEntity{
 
     private Integer id;
@@ -20,6 +24,15 @@ public class CompanyShare extends VersionedEntity{
 
     public CompanyShare(){
 
+    }
+
+    public static CompanyShare getCompanyShareFromResultSet(ResultSet resultSet) throws SQLException {
+        CompanyShare companyShare = new CompanyShare();
+        companyShare.setCompanyId(resultSet.getInt("companyId"));
+        companyShare.setId(resultSet.getInt("id"));
+        companyShare.setNumberOfUnits(resultSet.getInt("number_of_units"));
+        companyShare.setVersion(resultSet.getInt("version"));
+        return companyShare;
     }
 
     public Integer getId() {

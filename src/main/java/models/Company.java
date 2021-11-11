@@ -1,5 +1,8 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class Company extends VersionedEntity{
 
     private Integer id;
@@ -17,6 +20,16 @@ public class Company extends VersionedEntity{
 
     public Company(){
 
+    }
+
+    public static Company getCompanyFromResultSet(ResultSet resultSet) throws SQLException {
+        Company company = new Company();
+        company.setCode(resultSet.getString("code"));
+        company.setName(resultSet.getString("name"));
+        company.setSector(resultSet.getString("sector"));
+        company.setId(resultSet.getInt("id"));
+        company.setVersion(resultSet.getInt("version"));
+        return company;
     }
 
     public Integer getId() {
