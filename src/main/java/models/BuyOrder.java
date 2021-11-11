@@ -1,5 +1,7 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 public class BuyOrder extends VersionedEntity{
@@ -28,6 +30,20 @@ public class BuyOrder extends VersionedEntity{
 
     public BuyOrder(){
 
+    }
+
+    public static BuyOrder getBuyOrderFromResultSet(ResultSet resultSet) throws SQLException {
+        BuyOrder buyOrder = new BuyOrder();
+
+        buyOrder.setId(resultSet.getInt("id"));
+        buyOrder.setCompanyId(resultSet.getInt("company_id"));
+        buyOrder.setDate(resultSet.getDate("date"));
+        buyOrder.setOwnerId(resultSet.getInt("owner_id"));
+        buyOrder.setNumberOfUnits(resultSet.getInt("number_of_units"));
+        buyOrder.setPricePerUnit(resultSet.getDouble("price_per_unit"));
+        buyOrder.setVersion(resultSet.getInt("version"));
+
+        return buyOrder;
     }
 
     public Integer getId() {
