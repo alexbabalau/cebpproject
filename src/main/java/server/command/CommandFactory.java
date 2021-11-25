@@ -24,6 +24,9 @@ public class CommandFactory {
             case "/add-money": {
                 return new AddMoneyCommand();
             }
+            case "/withdraw-money": {
+                return new WithdrawMoneyCommand();
+            }
             default:
                 throw new NoSuchCommandException();
         }
