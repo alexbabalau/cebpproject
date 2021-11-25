@@ -1,5 +1,8 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class User extends VersionedEntity{
     private Integer id;
     private String username;
@@ -10,6 +13,16 @@ public class User extends VersionedEntity{
         this.id = id;
         this.username = username;
         this.amount = amount;
+    }
+
+    public static User getBuyOrderFromResultSet(ResultSet resultSet) throws SQLException {
+        User user = null;
+
+        user.setId(resultSet.getInt("id"));
+        user.setAmount(resultSet.getDouble("amount"));
+        user.setUsername(resultSet.getString("username"));
+
+        return user;
     }
 
     public Double getAmount() {
