@@ -4,19 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dd64bafb-4c8d-489d-b2e7-bff5f43bba6b" name="Default Changelist" comment="Added amount field to user model">
-      <change afterPath="$PROJECT_DIR$/src/main/java/dao/CompanyShareDao.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/exceptions/ResourceNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/server/command/AddSellOrderCommand.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/server/command/exceptions/NotEnoughMoneyException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/server/command/exceptions/NotEnoughUnitsException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dao/CompanyDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dao/CompanyDao.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dao/OrderDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dao/OrderDao.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/models/BuyOrder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/models/BuyOrder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/models/Company.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/models/Company.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/models/CompanyShare.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/models/CompanyShare.java" afterDir="false" />
+    <list default="true" id="dd64bafb-4c8d-489d-b2e7-bff5f43bba6b" name="Default Changelist" comment="Added UserService &amp; implemented AddCommand">
+      <change beforePath="$PROJECT_DIR$/src/main/java/server/command/CommandFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/server/command/CommandFactory.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +45,11 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
@@ -106,6 +99,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1635269042852</updated>
+      <workItem from="1637831371182" duration="14751000" />
     </task>
     <task id="LOCAL-00001" summary="Added Concurrent Server with Thread Pool &amp; Refactored Models">
       <created>1636407098425</created>
@@ -128,8 +122,18 @@
       <option name="project" value="LOCAL" />
       <updated>1636424795265</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Added UserService &amp; implemented AddCommand">
+      <created>1637854032459</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1637854032459</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -141,11 +145,13 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Added Concurrent Server with Thread Pool &amp; Refactored Models" />
     <MESSAGE value="Added User model &amp; Added version field &amp; Added List Sale Stocks command" />
     <MESSAGE value="Added amount field to user model" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added amount field to user model" />
+    <MESSAGE value="Added UserService &amp; implemented AddCommand" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added UserService &amp; implemented AddCommand" />
   </component>
 </project>

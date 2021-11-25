@@ -21,6 +21,12 @@ public class CommandFactory {
             case "/list-stock-orders": {
                 return new ListStockOrdersCommand();
             }
+            case "/add-money": {
+                return new AddMoneyCommand();
+            }
+            case "/withdraw-money": {
+                return new WithdrawMoneyCommand();
+            }
             default:
                 throw new NoSuchCommandException();
         }
