@@ -9,6 +9,9 @@ public class WithdrawMoneyCommand implements Command{
         Double amount = Double.parseDouble(args[1]);
         UserService userService = UserService.getInstance();
 
+        if(currentUser == null)
+            return "Please login!";
+
         return userService.withdrawMoney(currentUser, amount);
     }
 }
