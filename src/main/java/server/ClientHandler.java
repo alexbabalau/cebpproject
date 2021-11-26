@@ -3,6 +3,7 @@ package server;
 import models.User;
 import server.command.Command;
 import server.command.CommandFactory;
+import server.command.LoginCommand;
 import server.command.exceptions.NoSuchCommandException;
 
 import java.io.*;
@@ -16,6 +17,7 @@ public class ClientHandler implements Runnable {
     public ClientHandler(Socket socket){
         this.socket = socket;
     }
+
     public void run() {
         try{
             BufferedReader inputStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -26,6 +28,9 @@ public class ClientHandler implements Runnable {
                 String[] args = line.split(" ");
                 try{
                     Command command = CommandFactory.getInstance().getCommand(args[0]);
+                    if(command instanceof LoginCommand) {
+                        ((LoginCommand) command).setClientHandler(this);
+                    }
                     outputStream.println(command.runCommand(currentUser, args));
                 }
                 catch (NoSuchCommandException ex){
@@ -40,5 +45,13 @@ public class ClientHandler implements Runnable {
         catch (IOException ex){
             ex.printStackTrace();
         }
+    }
+
+    public User getCurrentUser() {
+        return currentUser;
+    }
+
+    public void setCurrentUser(User currentUser) {
+        this.currentUser = currentUser;
     }
 }

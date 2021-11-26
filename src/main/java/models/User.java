@@ -8,6 +8,12 @@ public class User extends VersionedEntity{
     private String username;
     private Double amount;
 
+    public User(String username, Double amount) {
+        this.id = null;
+        this.username = username;
+        this.amount = amount;
+    }
+
     public User(Integer version, Integer id, String username, Double amount) {
         super(version);
         this.id = id;
@@ -15,7 +21,7 @@ public class User extends VersionedEntity{
         this.amount = amount;
     }
 
-    public static User getBuyOrderFromResultSet(ResultSet resultSet) throws SQLException {
+    public static User getUserFromResultSet(ResultSet resultSet) throws SQLException {
         User user = null;
 
         user.setId(resultSet.getInt("id"));

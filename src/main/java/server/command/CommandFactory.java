@@ -1,9 +1,9 @@
 package server.command;
 
+import server.ClientHandler;
 import server.command.exceptions.NoSuchCommandException;
 
 public class CommandFactory {
-
     private static CommandFactory instance;
 
     private CommandFactory(){
@@ -26,6 +26,9 @@ public class CommandFactory {
             }
             case "/withdraw-money": {
                 return new WithdrawMoneyCommand();
+            }
+            case "/login": {
+                return new LoginCommand();
             }
             default:
                 throw new NoSuchCommandException();
