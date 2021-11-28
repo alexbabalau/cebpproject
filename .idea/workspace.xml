@@ -4,12 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dd64bafb-4c8d-489d-b2e7-bff5f43bba6b" name="Default Changelist" comment="Added AddSellOrder Service method">
-      <change afterPath="$PROJECT_DIR$/src/main/java/dao/TransactionService.java" afterDir="false" />
+    <list default="true" id="dd64bafb-4c8d-489d-b2e7-bff5f43bba6b" name="Default Changelist" comment="Refactored Add Sell Order Method + Added transaction record in database">
+      <change afterPath="$PROJECT_DIR$/src/main/java/models/transientModels/StockPrice.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/server/command/ListStockPricesCommand.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/dao/OrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dao/OrderService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/dao/TransactionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/dao/TransactionService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/models/Transaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/models/Transaction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/server/command/AddSellOrderCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/server/command/AddSellOrderCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/server/command/CommandFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/server/command/CommandFactory.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -128,7 +130,14 @@
       <option name="project" value="LOCAL" />
       <updated>1636630206695</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Refactored Add Sell Order Method + Added transaction record in database">
+      <created>1637799317242</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1637799317242</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -148,6 +157,7 @@
     <MESSAGE value="Added User model &amp; Added version field &amp; Added List Sale Stocks command" />
     <MESSAGE value="Added amount field to user model" />
     <MESSAGE value="Added AddSellOrder Service method" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added AddSellOrder Service method" />
+    <MESSAGE value="Refactored Add Sell Order Method + Added transaction record in database" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactored Add Sell Order Method + Added transaction record in database" />
   </component>
 </project>

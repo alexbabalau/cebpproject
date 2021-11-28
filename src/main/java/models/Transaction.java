@@ -1,5 +1,7 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
 public class Transaction extends VersionedEntity{
@@ -30,6 +32,19 @@ public class Transaction extends VersionedEntity{
 
     public Transaction(){
 
+    }
+
+    public static Transaction getTransactionFromResultSet(ResultSet resultSet) throws SQLException {
+        Transaction transaction = new Transaction();
+        transaction.setId(resultSet.getInt("id"));
+        transaction.setDate(resultSet.getDate("date"));
+        transaction.setNumberOfUnits(resultSet.getInt("number_of_units"));
+        transaction.setPricePerUnit(resultSet.getDouble("price_per_unit"));
+        transaction.setCompanyId(resultSet.getInt("company_id"));
+        transaction.setSellerId(resultSet.getInt("seller_id"));
+        transaction.setBuyerId(resultSet.getInt("buyer_id"));
+
+        return transaction;
     }
 
     public Integer getId() {
@@ -87,4 +102,6 @@ public class Transaction extends VersionedEntity{
     public void setDate(Date date) {
         this.date = date;
     }
+
+
 }
