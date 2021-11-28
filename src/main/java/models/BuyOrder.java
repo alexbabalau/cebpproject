@@ -1,12 +1,16 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 
-public class BuyOrder {
+public class BuyOrder extends VersionedEntity{
 
-    private String companyCode;
+    private Integer id;
 
-    private String owner;
+    private Integer companyId;
+
+    private Integer ownerId;
 
     private Integer numberOfUnits;
 
@@ -14,9 +18,11 @@ public class BuyOrder {
 
     private Date date;
 
-    public BuyOrder(String companyCode, String owner, Integer numberOfUnits, Double pricePerUnit, Date date) {
-        this.companyCode = companyCode;
-        this.owner = owner;
+    public BuyOrder(Integer version, Integer id, Integer companyId, Integer ownerId, Integer numberOfUnits, Double pricePerUnit, Date date) {
+        super(version);
+        this.id = id;
+        this.companyId = companyId;
+        this.ownerId = ownerId;
         this.numberOfUnits = numberOfUnits;
         this.pricePerUnit = pricePerUnit;
         this.date = date;
@@ -26,20 +32,42 @@ public class BuyOrder {
 
     }
 
-    public String getCompanyCode() {
-        return companyCode;
+    public static BuyOrder getBuyOrderFromResultSet(ResultSet resultSet) throws SQLException {
+        BuyOrder buyOrder = new BuyOrder();
+
+        buyOrder.setId(resultSet.getInt("id"));
+        buyOrder.setCompanyId(resultSet.getInt("company_id"));
+        buyOrder.setDate(resultSet.getDate("date"));
+        buyOrder.setOwnerId(resultSet.getInt("owner_id"));
+        buyOrder.setNumberOfUnits(resultSet.getInt("number_of_units"));
+        buyOrder.setPricePerUnit(resultSet.getDouble("price_per_unit"));
+        buyOrder.setVersion(resultSet.getInt("version"));
+
+        return buyOrder;
     }
 
-    public void setCompanyCode(String companyCode) {
-        this.companyCode = companyCode;
+    public Integer getId() {
+        return id;
     }
 
-    public String getOwner() {
-        return owner;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public Integer getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
+    }
+
+    public Integer getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Integer ownerId) {
+        this.ownerId = ownerId;
     }
 
     public Integer getNumberOfUnits() {
