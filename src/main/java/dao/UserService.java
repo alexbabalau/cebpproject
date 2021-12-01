@@ -20,12 +20,12 @@ public class UserService {
     }
 
     private void updateMoneyWithId(Integer id, Double amount, Connection connection) throws SQLException {
-        String sql = "UPDATE user SET amount=amount+? WHERE id=?";
+        String sql = "UPDATE user SET amount = amount + ? WHERE id = ?;";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql)){
-            pstmt.setInt(1, id);
-            pstmt.setDouble(2, amount);
-            pstmt.executeUpdate(sql);
+            pstmt.setDouble(1, amount);
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
         }
         catch (SQLException e){
             e.printStackTrace();
@@ -72,7 +72,7 @@ public class UserService {
             if(currentMoneyAmount < amount)
                 return "Not enough money";
 
-            updateMoneyWithId(userId, amount, con);
+            updateMoneyWithId(userId, -amount, con);
             con.commit();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -89,7 +89,7 @@ public class UserService {
     }
 
     private User getUserWithId(Integer id, Connection con) {
-        String sql = "SELECT amount FROM user WHERE id=?";
+        String sql = "SELECT * FROM user WHERE id=?";
         User user = null;
 
         try(PreparedStatement pstmt = con.prepareStatement(sql)){
@@ -108,7 +108,7 @@ public class UserService {
     }
 
     private User getUserWithUsername(String username, Connection con) {
-        String sql = "SELECT amount FROM user WHERE username=?";
+        String sql = "SELECT * FROM user WHERE username=?";
         User user = null;
 
         try(PreparedStatement pstmt = con.prepareStatement(sql)){
@@ -128,9 +128,9 @@ public class UserService {
 
     private User createUser(String username, Connection con) throws SQLException {
         User user = new User(username, 0.0);
-        String sql = "INSERT INTO user VALUES(?, ?)";
+        String sql = "INSERT INTO user(username, amount) VALUES(?, ?)";
 
-        try(PreparedStatement pstmt = con.prepareStatement(sql)){
+        try(PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             pstmt.setString(1, username);
             pstmt.setDouble(2, 0.0);
             Integer insertedCount = pstmt.executeUpdate();

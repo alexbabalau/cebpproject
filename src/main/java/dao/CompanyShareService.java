@@ -25,7 +25,7 @@ public class CompanyShareService {
 
     public CompanyShare getCompanyShareByCompanyIdAndOwnerIdForUpdateWithConnection(Integer companyId,
                                                                                     Integer ownerId,
-                                                                                    Connection connection){
+                                                                                    Connection connection) throws SQLException{
         String sql = "SELECT * FROM company_share where company_id = ? AND owner_id = ? FOR UPDATE";
         CompanyShare companyShare = null;
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -41,6 +41,7 @@ public class CompanyShareService {
         }
         catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
         return companyShare;
     }

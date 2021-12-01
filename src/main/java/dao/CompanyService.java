@@ -22,7 +22,7 @@ public class CompanyService {
     }
 
     public Company findByCodeWithConnection(String code, Connection connection){
-        String sql = "SELECT * FROM company where id = ?";
+        String sql = "SELECT * FROM company where code = ?";
         Company company = null;
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, code);

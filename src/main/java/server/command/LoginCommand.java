@@ -17,6 +17,7 @@ public class LoginCommand implements Command{
             clientHandler.setCurrentUser(currentUser);
         }
         catch (Exception e) {
+            e.printStackTrace();
             return "Login error";
         }
 

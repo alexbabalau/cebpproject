@@ -1,5 +1,6 @@
 package dao;
 
+import exceptions.ResourceNotFoundException;
 import models.*;
 import server.command.exceptions.NotEnoughUnitsException;
 
@@ -117,46 +118,75 @@ public class OrderService {
         }
     }
 
-    public String addSellOrder(String companyCode, Integer numberOfUnits, Double pricePerUnit, User user) throws SQLException {
+    private SellOrder insertSellOrderWithConnection(SellOrder sellOrder, Connection con) throws SQLException{
+        String insertSellOrderSql = "INSERT INTO sell_order VALUES(?, ?, ?, ?, ?, ?);";
+        try (PreparedStatement pstmt = con.prepareStatement(insertSellOrderSql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setInt(1, sellOrder.getCompanyId());
+            pstmt.setInt(2, sellOrder.getOwnerId());
+            pstmt.setInt(3, sellOrder.getNumberOfUnits());
+            pstmt.setDouble(4, sellOrder.getPricePerUnit());
+            pstmt.setDate(5, new java.sql.Date(sellOrder.getDate().getTime()));
+            pstmt.setInt(6, 1);
+            Integer insertedCount = pstmt.executeUpdate();
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    sellOrder.setId(generatedKeys.getInt(1));
+                } else {
+                    throw new SQLException("Creating user failed, no ID obtained.");
+                }
+            }
+            return sellOrder;
+        }
+        catch (SQLException ex){
+            throw ex;
+        }
+
+    }
+
+    public String addBuyOrder(String companyCode, Integer numberOfUnits, Double pricePerUnit, User user) throws SQLException {
         Integer companyId;
+
+        if(user == null){
+            return "Error: not authenticated";
+        }
+
         Integer ownerId = user.getId();
         Connection con = null;
+
+
 
         try {
             con = DriverManager
                     .getConnection(DB_URL, DB_USER, DB_PASS);
             con.setAutoCommit(false);
             Company company = CompanyService.getInstance().findByCodeWithConnection(companyCode, con);
-            CompanyShare companyShare = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerIdForUpdateWithConnection(company.getId(), ownerId, con);
+            CompanyShare companyShare = null;
+            try{
+                companyShare = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerIdForUpdateWithConnection(company.getId(), ownerId, con);
+            }
+            catch (ResourceNotFoundException e){
+                return "No shares found";
+            }
             if (companyShare.getNumberOfUnits() < numberOfUnits)
                 throw new NotEnoughUnitsException("Not enough units to sell");
-            Integer sellOrderId = null;
-            SellOrder sellOrder = new SellOrder(1, null, company.getId(), ownerId, numberOfUnits, pricePerUnit, new Date(System.currentTimeMillis()));
-            String insertSellOrderSql = "INSERT INTO sell_order VALUES(?, ?, ?, ?, ?, ?);";
-            try (PreparedStatement pstmt = con.prepareStatement(insertSellOrderSql, Statement.RETURN_GENERATED_KEYS)) {
-
-                pstmt.setInt(1, company.getId());
-                pstmt.setInt(2, ownerId);
-                pstmt.setInt(3, numberOfUnits);
-                pstmt.setDouble(4, pricePerUnit);
-                pstmt.setDate(5, new java.sql.Date(sellOrder.getDate().getTime()));
-                pstmt.setInt(6, 1);
-                Integer insertedCount = pstmt.executeUpdate();
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        sellOrder.setId(generatedKeys.getInt(1));
-                    } else {
-                        throw new SQLException("Creating sell order failed, no ID obtained.");
-                    }
-                }
-            }
-
             List<BuyOrder> buyOrders = getBuyOrdersGreaterThanFromCompanyIdForUpdateWithConnection(company.getId(), pricePerUnit, con);
             Integer totalUnits = numberOfUnits;
             Double totalPrice = 0.0;
             for (BuyOrder buyOrder : buyOrders) {
                 if (numberOfUnits >= buyOrder.getNumberOfUnits()) {
+                    Transaction transaction = new Transaction();
+                    transaction.setBuyerId(buyOrder.getOwnerId());
+                    transaction.setSellerId(ownerId);
+                    transaction.setDate(new java.util.Date());
+                    transaction.setCompanyId(company.getId());
+                    transaction.setNumberOfUnits(buyOrder.getNumberOfUnits());
+                    transaction.setPricePerUnit(buyOrder.getPricePerUnit());
+
+                    TransactionService.getInstance().insertTransactionWithConnection(transaction, con);
+
                     deleteBuyOrderWithIdWithConnection(buyOrder.getId(), con);
+
                     numberOfUnits -= buyOrder.getNumberOfUnits();
                     totalPrice += pricePerUnit * buyOrder.getNumberOfUnits();
                 } else {
@@ -166,12 +196,96 @@ public class OrderService {
                     break;
                 }
             }
-            if (numberOfUnits.equals(0)) {
-                deleteSellOrderWithIdWithConnection(sellOrderId, con);
-            } else {
+            if (!numberOfUnits.equals(0)) {
+                SellOrder sellOrder = new SellOrder();
                 sellOrder.setNumberOfUnits(numberOfUnits);
-                updateSellOrderWithIdWithConnection(sellOrder.getId(), sellOrder, con);
+                sellOrder.setCompanyId(company.getId());
+                sellOrder.setOwnerId(ownerId);
+                sellOrder.setDate(new java.util.Date());
+                insertSellOrderWithConnection(sellOrder, con);
             }
+
+
+
+            con.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try {
+                if (con != null)
+                    con.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+            throw new SQLException("Exception encountered");
+        }
+
+
+        return "Successful";
+    }
+
+    public String addSellOrder(String companyCode, Integer numberOfUnits, Double pricePerUnit, User user) throws SQLException {
+        Integer companyId;
+
+        if(user == null){
+            return "Error: not authenticated";
+        }
+
+        Integer ownerId = user.getId();
+        Connection con = null;
+
+
+
+        try {
+            con = DriverManager
+                    .getConnection(DB_URL, DB_USER, DB_PASS);
+            con.setAutoCommit(false);
+            Company company = CompanyService.getInstance().findByCodeWithConnection(companyCode, con);
+            CompanyShare companyShare = null;
+            try{
+                companyShare = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerIdForUpdateWithConnection(company.getId(), ownerId, con);
+            }
+            catch (ResourceNotFoundException e){
+                return "No shares found";
+            }
+            if (companyShare.getNumberOfUnits() < numberOfUnits)
+                throw new NotEnoughUnitsException("Not enough units to sell");
+            List<BuyOrder> buyOrders = getBuyOrdersGreaterThanFromCompanyIdForUpdateWithConnection(company.getId(), pricePerUnit, con);
+            Integer totalUnits = numberOfUnits;
+            Double totalPrice = 0.0;
+            for (BuyOrder buyOrder : buyOrders) {
+                if (numberOfUnits >= buyOrder.getNumberOfUnits()) {
+                    Transaction transaction = new Transaction();
+                    transaction.setBuyerId(buyOrder.getOwnerId());
+                    transaction.setSellerId(ownerId);
+                    transaction.setDate(new java.util.Date());
+                    transaction.setCompanyId(company.getId());
+                    transaction.setNumberOfUnits(buyOrder.getNumberOfUnits());
+                    transaction.setPricePerUnit(buyOrder.getPricePerUnit());
+
+                    TransactionService.getInstance().insertTransactionWithConnection(transaction, con);
+
+                    deleteBuyOrderWithIdWithConnection(buyOrder.getId(), con);
+
+                    numberOfUnits -= buyOrder.getNumberOfUnits();
+                    totalPrice += pricePerUnit * buyOrder.getNumberOfUnits();
+                } else {
+                    buyOrder.setNumberOfUnits(buyOrder.getNumberOfUnits() - numberOfUnits);
+                    numberOfUnits = 0;
+                    updateBuyOrderWithIdWithConnection(buyOrder.getId(), buyOrder, con);
+                    break;
+                }
+            }
+            if (!numberOfUnits.equals(0)) {
+                SellOrder sellOrder = new SellOrder();
+                sellOrder.setNumberOfUnits(numberOfUnits);
+                sellOrder.setCompanyId(company.getId());
+                sellOrder.setOwnerId(ownerId);
+                sellOrder.setDate(new java.util.Date());
+                insertSellOrderWithConnection(sellOrder, con);
+            }
+
+
+
             con.commit();
         } catch (SQLException e) {
             e.printStackTrace();

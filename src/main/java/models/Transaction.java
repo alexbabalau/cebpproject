@@ -1,5 +1,9 @@
 package models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+
 public class Transaction extends VersionedEntity{
     private Integer id;
 
@@ -13,7 +17,9 @@ public class Transaction extends VersionedEntity{
 
     private Double pricePerUnit;
 
-    public Transaction(Integer version, Integer id, Integer buyerId, Integer sellerId, Integer companyId, Integer numberOfUnits, Double pricePerUnit) {
+    private Date date;
+
+    public Transaction(Integer version, Integer id, Integer buyerId, Integer sellerId, Integer companyId, Integer numberOfUnits, Double pricePerUnit, Date date) {
         super(version);
         this.id = id;
         this.buyerId = buyerId;
@@ -21,10 +27,24 @@ public class Transaction extends VersionedEntity{
         this.companyId = companyId;
         this.numberOfUnits = numberOfUnits;
         this.pricePerUnit = pricePerUnit;
+        this.date = date;
     }
 
     public Transaction(){
 
+    }
+
+    public static Transaction getTransactionFromResultSet(ResultSet resultSet) throws SQLException {
+        Transaction transaction = new Transaction();
+        transaction.setId(resultSet.getInt("id"));
+        transaction.setDate(resultSet.getDate("date"));
+        transaction.setNumberOfUnits(resultSet.getInt("number_of_units"));
+        transaction.setPricePerUnit(resultSet.getDouble("price_per_unit"));
+        transaction.setCompanyId(resultSet.getInt("company_id"));
+        transaction.setSellerId(resultSet.getInt("seller_id"));
+        transaction.setBuyerId(resultSet.getInt("buyer_id"));
+
+        return transaction;
     }
 
     public Integer getId() {
@@ -74,4 +94,14 @@ public class Transaction extends VersionedEntity{
     public void setPricePerUnit(Double pricePerUnit) {
         this.pricePerUnit = pricePerUnit;
     }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+
 }
