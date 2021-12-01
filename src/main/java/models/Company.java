@@ -28,7 +28,6 @@ public class Company extends VersionedEntity{
         company.setName(resultSet.getString("name"));
         company.setSector(resultSet.getString("sector"));
         company.setId(resultSet.getInt("id"));
-        company.setVersion(resultSet.getInt("version"));
         return company;
     }
 

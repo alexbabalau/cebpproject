@@ -31,7 +31,8 @@ public class ClientHandler implements Runnable {
                     if(command instanceof LoginCommand) {
                         ((LoginCommand) command).setClientHandler(this);
                     }
-                    outputStream.println(command.runCommand(currentUser, args));
+                    String response = command.runCommand(currentUser, args);
+                    outputStream.println(response + "\nDone\n");
                 }
                 catch (NoSuchCommandException ex){
                     outputStream.println("Command does not exist\nDone");

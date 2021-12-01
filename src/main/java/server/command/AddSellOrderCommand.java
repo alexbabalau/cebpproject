@@ -11,13 +11,12 @@ public class AddSellOrderCommand implements Command{
 
         StringBuilder result = new StringBuilder("");
         try{
-            String response = OrderService.getInstance().addSellOrder(args[0], Integer.parseInt(args[1]), Double.parseDouble(args[2]), currentUser);
-            result.append(response + "\n");
+            String response = OrderService.getInstance().addSellOrder(args[1], Integer.parseInt(args[2]), Double.parseDouble(args[3]), currentUser);
+            result.append(response);
         }
         catch (SQLException ex){
-            result.append(ex.getMessage() + "\n");
+            result.append(ex.getMessage());
         }
-        result.append("Done\n");
         return result.toString();
     }
 }
