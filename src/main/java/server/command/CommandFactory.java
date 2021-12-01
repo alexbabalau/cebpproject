@@ -36,6 +36,9 @@ public class CommandFactory {
             case "/login": {
                 return new LoginCommand();
             }
+            case "/list-stock-transaction-history": {
+                return new ListStockTransactionHistoryCommand();
+            }
             default:
                 throw new NoSuchCommandException();
         }

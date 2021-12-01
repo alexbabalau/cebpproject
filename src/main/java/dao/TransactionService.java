@@ -75,5 +75,28 @@ public class TransactionService {
         return stockPrices;
     }
 
+    private List<Transaction> getTransactionsByCompanyIdWithConnection(Connection con) throws SQLException {
+        List<Transaction> transactions = new ArrayList<>();
+        return transactions;
+    }
+
+    public List<Transaction> getTransactionsByCompanyId(Integer id) throws SQLException{
+        Connection con = null;
+        List<Transaction> transactions = null;
+        try {
+            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+            con.setAutoCommit(false);
+            transactions = getTransactionsByCompanyIdWithConnection(con); // TODO
+            con.commit();
+        }
+        catch (SQLException ex) {
+            if(con != null)
+                con.rollback();
+            throw ex;
+        }
+
+        return transactions;
+    }
+
 
 }
