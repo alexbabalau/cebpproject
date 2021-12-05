@@ -23,15 +23,14 @@ public class TransactionService {
     }
 
     public void insertTransactionWithConnection(Transaction transaction, Connection con) throws SQLException{
-        String insertTransactionSql = "INSERT INTO transaction VALUES (?, ?)";
+        String insertTransactionSql = "INSERT INTO transaction(buyer_id, seller_id, company_id, number_of_units, price_per_unit, date) VALUES (?, ?, ?, ?, ?, ?)";
         try(PreparedStatement statement = con.prepareStatement(insertTransactionSql)){
             statement.setInt(1, transaction.getBuyerId());
             statement.setInt(2, transaction.getSellerId());
             statement.setInt(3, transaction.getCompanyId());
             statement.setInt(4, transaction.getNumberOfUnits());
             statement.setDouble(5, transaction.getPricePerUnit());
-            statement.setInt(6, 1);
-            statement.setDate(7, new java.sql.Date(transaction.getDate().getTime()));
+            statement.setDate(6, new java.sql.Date(transaction.getDate().getTime()));
             statement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
