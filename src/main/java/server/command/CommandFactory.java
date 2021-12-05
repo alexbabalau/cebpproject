@@ -27,6 +27,9 @@ public class CommandFactory {
             case "/add-sell-order": {
                 return new AddSellOrderCommand();
             }
+            case "/add-buy-order":{
+                return new AddBuyOrderCommand();
+            }
             case "/add-money": {
                 return new AddMoneyCommand();
             }

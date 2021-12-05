@@ -4,6 +4,8 @@ import dao.OrderService;
 import models.SellOrder;
 import models.User;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListStockOrdersCommand implements Command {
@@ -11,7 +13,13 @@ public class ListStockOrdersCommand implements Command {
     private OrderService orderService = OrderService.getInstance();
 
     public String runCommand(User currentUser, String[] args) {
-        List<SellOrder> sellOrders = orderService.getCompanySellOrders(args[1]);
+        List<SellOrder> sellOrders = new ArrayList<>();
+        try{
+            sellOrders = orderService.getCompanySellOrders(args[1]);
+        }
+        catch (SQLException e){
+            return "Error while listing stocks";
+        }
         StringBuilder result = new StringBuilder();
 
         result.append("SELL ORDERS\n");
