@@ -30,7 +30,7 @@ public class TransactionService {
             statement.setInt(3, transaction.getCompanyId());
             statement.setInt(4, transaction.getNumberOfUnits());
             statement.setDouble(5, transaction.getPricePerUnit());
-            statement.setDate(6, new java.sql.Date(transaction.getDate().getTime()));
+            statement.setTimestamp(6, new java.sql.Timestamp(transaction.getDate().getTime()));
             statement.executeUpdate();
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -41,10 +41,10 @@ public class TransactionService {
     private List<StockPrice> getLastTransactionsWithConnection(Connection con) throws SQLException{
         List<StockPrice> stockPrices = new ArrayList<>();
         String listStockSql =
-                "SELECT C.company_id as company_id, C.name as name, T.date, T.price_per_unit as price_per_unit FROM transactions T JOIN company C ON T.company_id = C.id " +
+                "SELECT C.id as company_id, C.name as company_name, T.date, T.price_per_unit as price_per_unit FROM transaction T JOIN company C ON T.company_id = C.id " +
                 "WHERE T.date >= ALL(" +
-                        "SELECT date FROM transactions " +
-                        "WHERE company_id = C.company_id)";
+                        "SELECT date FROM transaction " +
+                        "WHERE company_id = C.id)";
         try(PreparedStatement preparedStatement = con.prepareStatement(listStockSql)){
             ResultSet resultSet = preparedStatement.executeQuery();
             while(resultSet.next()){

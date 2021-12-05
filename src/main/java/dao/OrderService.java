@@ -134,7 +134,7 @@ public class OrderService {
             pstmt.setInt(2, sellOrder.getOwnerId());
             pstmt.setInt(3, sellOrder.getNumberOfUnits());
             pstmt.setDouble(4, sellOrder.getPricePerUnit());
-            pstmt.setDate(5, new java.sql.Date(sellOrder.getDate().getTime()));
+            pstmt.setTimestamp(5, new java.sql.Timestamp(sellOrder.getDate().getTime()));
             Integer insertedCount = pstmt.executeUpdate();
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -159,7 +159,7 @@ public class OrderService {
             pstmt.setInt(2, buyOrder.getOwnerId());
             pstmt.setInt(3, buyOrder.getNumberOfUnits());
             pstmt.setDouble(4, buyOrder.getPricePerUnit());
-            pstmt.setDate(5, new java.sql.Date(buyOrder.getDate().getTime()));
+            pstmt.setTimestamp(5, new java.sql.Timestamp(buyOrder.getDate().getTime()));
             Integer insertedCount = pstmt.executeUpdate();
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
@@ -351,6 +351,10 @@ public class OrderService {
                     catch (NegativeBalanceException ex){
                         continue;
                     }
+                    Transaction transaction = Transaction.getTransactionFromBuyAndSellOrder(buyOrder, sellOrder);
+
+                    TransactionService.getInstance().insertTransactionWithConnection(transaction, con);
+
                     CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), numberOfUnits, con);
                     buyOrder.setNumberOfUnits(buyOrder.getNumberOfUnits() - numberOfUnits);
                     numberOfUnits = 0;
