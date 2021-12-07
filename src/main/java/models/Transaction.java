@@ -51,7 +51,8 @@ public class Transaction extends VersionedEntity{
         Transaction transaction = new Transaction();
         transaction.setBuyerId(buyOrder.getOwnerId());
         transaction.setSellerId(sellOrder.getOwnerId());
-        transaction.setDate(new java.util.Date());
+        transaction.setDate(new java.util.Date(System.currentTimeMillis()));
+        System.out.println(transaction.getDate());
         transaction.setCompanyId(buyOrder.getCompanyId());
         transaction.setNumberOfUnits(Math.min(buyOrder.getNumberOfUnits(), sellOrder.getNumberOfUnits()));
         transaction.setPricePerUnit(Math.min(buyOrder.getPricePerUnit(), sellOrder.getPricePerUnit()));
