@@ -17,7 +17,7 @@ public class ListStockOrdersCommand implements Command {
         try{
             sellOrders = orderService.getCompanySellOrders(args[1]);
         }
-        catch (SQLException e){
+        catch (SQLException | InterruptedException e){
             return "Error while listing stocks";
         }
         StringBuilder result = new StringBuilder();
