@@ -24,6 +24,22 @@ public class UserService {
         return instance;
     }
 
+    private void startRead() throws InterruptedException{
+        mutex.acquire();
+        numberReads += 1;
+        if(numberReads == 1)
+            writeLock.acquire();
+        mutex.release();
+    }
+
+    private void endRead() throws InterruptedException{
+        mutex.acquire();
+        numberReads -= 1;
+        if(numberReads == 0)
+            writeLock.release();
+        mutex.release();
+    }
+
     private void updateMoneyWithId(Integer id, Double amount, Connection connection) throws SQLException, InterruptedException {
         String sql = "UPDATE user SET amount = amount + ? WHERE id = ?;";
 
@@ -104,21 +120,13 @@ public class UserService {
 
         try(PreparedStatement pstmt = con.prepareStatement(sql)){
             pstmt.setInt(1, id);
-            mutex.acquire();
-            numberReads += 1;
-            if(numberReads == 1)
-                writeLock.acquire();
-            mutex.release();
+            startRead();
             try(ResultSet resultSet = pstmt.executeQuery()){
                 while(resultSet.next()){
                     user = User.getUserFromResultSet(resultSet);
                 }
             }
-            mutex.acquire();
-            numberReads -= 1;
-            if(numberReads == 0)
-                writeLock.release();
-            mutex.release();
+            endRead();
         }
         catch (SQLException | InterruptedException e){
             e.printStackTrace();
@@ -133,22 +141,14 @@ public class UserService {
         User user = null;
 
         try(PreparedStatement pstmt = con.prepareStatement(sql)){
-            mutex.acquire();
-            numberReads += 1;
-            if(numberReads == 1)
-                writeLock.acquire();
-            mutex.release();
+            startRead();
             pstmt.setString(1, username);
             try(ResultSet resultSet = pstmt.executeQuery()){
                 while(resultSet.next()){
                     user = User.getUserFromResultSet(resultSet);
                 }
             }
-            mutex.acquire();
-            numberReads -= 1;
-            if(numberReads == 0)
-                writeLock.release();
-            mutex.release();
+            endRead();
         }
         catch (SQLException | InterruptedException e){
             e.printStackTrace();

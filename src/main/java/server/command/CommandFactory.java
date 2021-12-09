@@ -39,6 +39,9 @@ public class CommandFactory {
             case "/login": {
                 return new LoginCommand();
             }
+            case "/add-stocks":{
+                return new AddStocksCommand();
+            }
             default:
                 throw new NoSuchCommandException();
         }

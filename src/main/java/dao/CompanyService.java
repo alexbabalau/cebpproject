@@ -2,6 +2,7 @@ package dao;
 
 import exceptions.ResourceNotFoundException;
 import models.Company;
+import models.User;
 
 import java.sql.*;
 
@@ -19,6 +20,34 @@ public class CompanyService {
 
     private CompanyService(){
 
+    }
+
+    public String addStocks(User currentUser, Integer numberOfUnits){
+        Connection connection = null;
+        try{
+            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+            connection.setAutoCommit(false);
+            String companyCode = currentUser.getUsername();
+            Company company = null;
+            try{
+                company = findByCodeWithConnection(companyCode, connection);
+            }
+            catch (ResourceNotFoundException e){
+                return "Error " + e.getMessage();
+            }
+            CompanyShareService.getInstance().addCompanyShares(company.getId(), currentUser.getId(), numberOfUnits, connection);
+            connection.commit();
+        }
+        catch (SQLException | InterruptedException e){
+            try{
+                connection.rollback();
+            }
+            catch (SQLException e1){
+                return "Exception encountered: " + e1.getMessage();
+            }
+            return "Exception encountered: " + e.getMessage();
+        }
+        return "Successful";
     }
 
     public Company findByCodeWithConnection(String code, Connection connection){

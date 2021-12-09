@@ -400,7 +400,7 @@ public class OrderService {
                 if(buyOrder.getOwnerId().equals(ownerId))
                     continue;
                 CompanyShare buyerCompanyShares = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerIdForUpdateWithConnection(company.getId(), buyOrder.getOwnerId(), con);
-                buyOrder.setNumberOfUnits(Math.min(buyerCompanyShares.getNumberOfUnits(), buyOrder.getNumberOfUnits()));
+                //buyOrder.setNumberOfUnits(Math.min(buyerCompanyShares.getNumberOfUnits(), buyOrder.getNumberOfUnits()));
                 if (numberOfUnits >= buyOrder.getNumberOfUnits()) {
 
                     try{
