@@ -3,6 +3,7 @@ package dao;
 import models.User;
 
 import java.sql.*;
+import java.util.concurrent.Semaphore;
 
 public class UserService {
     private static UserService instance;
@@ -10,6 +11,10 @@ public class UserService {
     private final String DB_URL = "jdbc:mysql://localhost:3306/stock-market?useSSL=false";
     private final String DB_USER = "stock-market";
     private final String DB_PASS = "password";
+
+    private Semaphore mutex = new Semaphore(1, true);
+    private Semaphore writeLock = new Semaphore(1, true);
+    private Integer numberReads = 0;
 
     private UserService(){ }
 
@@ -19,30 +24,35 @@ public class UserService {
         return instance;
     }
 
-    private void updateMoneyWithId(Integer id, Double amount, Connection connection) throws SQLException {
+    private void updateMoneyWithId(Integer id, Double amount, Connection connection) throws SQLException, InterruptedException {
         String sql = "UPDATE user SET amount = amount + ? WHERE id = ?;";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+            writeLock.acquire();
             pstmt.setDouble(1, amount);
             pstmt.setInt(2, id);
             pstmt.executeUpdate();
+            writeLock.release();
         }
         catch (SQLException e){
             e.printStackTrace();
             throw e;
         }
+        catch (InterruptedException e){
+            throw e;
+        }
+
     }
 
     public String addMoney(User user, Double amount) {
         Connection con = null;
         Integer userId = user.getId();
-
         try {
             con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
             con.setAutoCommit(false);
             updateMoneyWithId(userId, amount, con);
             con.commit();
-        } catch (SQLException throwables) {
+        } catch (SQLException | InterruptedException throwables) {
             throwables.printStackTrace();
             try {
                 con.rollback();
@@ -74,7 +84,7 @@ public class UserService {
 
             updateMoneyWithId(userId, -amount, con);
             con.commit();
-        } catch (SQLException throwables) {
+        } catch (SQLException | InterruptedException throwables) {
             throwables.printStackTrace();
             try {
                 con.rollback();
@@ -88,49 +98,72 @@ public class UserService {
         return "Successful";
     }
 
-    private User getUserWithId(Integer id, Connection con) {
+    private User getUserWithId(Integer id, Connection con) throws SQLException, InterruptedException{
         String sql = "SELECT * FROM user WHERE id=?";
         User user = null;
 
         try(PreparedStatement pstmt = con.prepareStatement(sql)){
             pstmt.setInt(1, id);
+            mutex.acquire();
+            numberReads += 1;
+            if(numberReads == 1)
+                writeLock.acquire();
+            mutex.release();
             try(ResultSet resultSet = pstmt.executeQuery()){
                 while(resultSet.next()){
                     user = User.getUserFromResultSet(resultSet);
                 }
             }
+            mutex.acquire();
+            numberReads -= 1;
+            if(numberReads == 0)
+                writeLock.release();
+            mutex.release();
         }
-        catch (SQLException e){
+        catch (SQLException | InterruptedException e){
             e.printStackTrace();
+            throw e;
         }
 
         return user;
     }
 
-    private User getUserWithUsername(String username, Connection con) {
+    private User getUserWithUsername(String username, Connection con) throws SQLException, InterruptedException {
         String sql = "SELECT * FROM user WHERE username=?";
         User user = null;
 
         try(PreparedStatement pstmt = con.prepareStatement(sql)){
+            mutex.acquire();
+            numberReads += 1;
+            if(numberReads == 1)
+                writeLock.acquire();
+            mutex.release();
             pstmt.setString(1, username);
             try(ResultSet resultSet = pstmt.executeQuery()){
                 while(resultSet.next()){
                     user = User.getUserFromResultSet(resultSet);
                 }
             }
+            mutex.acquire();
+            numberReads -= 1;
+            if(numberReads == 0)
+                writeLock.release();
+            mutex.release();
         }
-        catch (SQLException e){
+        catch (SQLException | InterruptedException e){
             e.printStackTrace();
+            throw e;
         }
 
         return user;
     }
 
-    private User createUser(String username, Connection con) throws SQLException {
+    private User createUser(String username, Connection con) throws SQLException, InterruptedException {
         User user = new User(username, 0.0);
         String sql = "INSERT INTO user(username, amount) VALUES(?, ?)";
 
         try(PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+            writeLock.acquire();
             pstmt.setString(1, username);
             pstmt.setDouble(2, 0.0);
             Integer insertedCount = pstmt.executeUpdate();
@@ -141,8 +174,9 @@ public class UserService {
                     throw new SQLException("Creating user failed, no ID obtained.");
                 }
             }
+            writeLock.release();
         }
-        catch (SQLException e){
+        catch (SQLException | InterruptedException e){
             e.printStackTrace();
             throw e;
         }

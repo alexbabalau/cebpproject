@@ -64,6 +64,7 @@ public class OrderService {
                 sellReads -= 1;
                 if(sellReads == 0)
                     sellWriteLock.release();
+                sellMutex.release();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -83,7 +84,7 @@ public class OrderService {
             buyMutex.acquire();
             buyReads += 1;
             if(buyReads == 1)
-                buyWriteLock.release();
+                buyWriteLock.acquire();
             buyMutex.release();
 
             pstmt.setInt(1, companyId);

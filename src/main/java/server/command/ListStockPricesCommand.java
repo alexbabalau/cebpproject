@@ -16,7 +16,7 @@ public class ListStockPricesCommand implements Command{
         try{
             stockPrices = TransactionService.getInstance().getStockPrices();
         }
-        catch (SQLException ex){
+        catch (SQLException | InterruptedException ex){
             return "Error in listing stock prices: " + ex.getMessage();
         }
         final StringBuilder result = new StringBuilder("");
