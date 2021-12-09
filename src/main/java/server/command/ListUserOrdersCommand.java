@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListStockOrdersUserCommand implements Command {
+public class ListUserOrdersCommand implements Command {
 
     private OrderService orderService = OrderService.getInstance();
 
@@ -29,11 +29,12 @@ public class ListStockOrdersUserCommand implements Command {
             result.append("Price: " + sellOrder.getPricePerUnit() + ", Shares: " + sellOrder.getNumberOfUnits() + "\n");
         }
 
-        result.append("\nBUY ORDERS\n");
-        for (BuyOrder buyOrder : buyOrders) {
-            result.append("Price: " + buyOrder.getPricePerUnit() + ", Shares: " + buyOrder.getNumberOfUnits() + "\n");
+        if(!buyOrders.isEmpty()){
+            result.append("\nBUY ORDERS\n");
+            for (BuyOrder buyOrder : buyOrders) {
+                result.append("Price: " + buyOrder.getPricePerUnit() + ", Shares: " + buyOrder.getNumberOfUnits() + "\n");
+            }
         }
-
 
         return result.toString();
 
