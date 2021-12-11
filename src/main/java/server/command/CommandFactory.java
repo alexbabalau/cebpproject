@@ -27,6 +27,12 @@ public class CommandFactory {
             case "/add-sell-order": {
                 return new AddSellOrderCommand();
             }
+            case "/list-user-orders": {
+                return new ListUserOrdersCommand();
+            }
+            case "/list-user-transaction-history": {
+                return new ListUserTransactionHistoryCommand();
+            }
             case "/add-buy-order":{
                 return new AddBuyOrderCommand();
             }

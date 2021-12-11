@@ -212,4 +212,33 @@ public class UserService {
         return user;
     }
 
+
+    public Integer getIdForUsername(String username) throws Exception{
+        Connection con = null;
+        User user;
+
+        try {
+            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+            con.setAutoCommit(false);
+
+            user = getUserWithUsername(username, con);
+
+            if(user == null)
+                user = createUser(username, con);
+
+            con.commit();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            try {
+                con.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw e;
+            }
+            throw throwables;
+        }
+
+        return user.getId();
+    }
+
 }
