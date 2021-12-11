@@ -1,5 +1,6 @@
 package dao;
 
+import exceptions.NegativeBalanceException;
 import models.User;
 
 import java.sql.*;
@@ -40,15 +41,19 @@ public class UserService {
         mutex.release();
     }
 
-    private void updateMoneyWithId(Integer id, Double amount, Connection connection) throws SQLException, InterruptedException {
-        String sql = "UPDATE user SET amount = amount + ? WHERE id = ?;";
+    public void updateMoneyWithId(Integer id, Double amount, Connection connection) throws SQLException, InterruptedException {
+        String sql = "UPDATE user SET amount = amount + ? WHERE id = ? AND amount + ? >= 0;";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql)){
             writeLock.acquire();
             pstmt.setDouble(1, amount);
             pstmt.setInt(2, id);
-            pstmt.executeUpdate();
+            pstmt.setDouble(3, amount);
+            Integer updatedUsers = pstmt.executeUpdate();
             writeLock.release();
+            if(updatedUsers == 0)
+                throw new NegativeBalanceException("User does not have enough money");
+
         }
         catch (SQLException e){
             e.printStackTrace();
@@ -84,21 +89,25 @@ public class UserService {
 
     public String withdrawMoney(User user, Double amount) {
         Connection con = null;
+
+        if(user == null){
+            return "Please login!";
+        }
+
         Integer userId = user.getId();
 
         try {
             con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
             con.setAutoCommit(false);
 
-            user = getUserWithId(userId, con);
-            if(user == null) {
-                return "Please login!";
-            }
-            Double currentMoneyAmount = user.getAmount();
-            if(currentMoneyAmount < amount)
-                return "Not enough money";
 
-            updateMoneyWithId(userId, -amount, con);
+
+            try{
+                updateMoneyWithId(userId, -amount, con);
+            }
+            catch (NegativeBalanceException ex){
+                return "Not enough money!";
+            }
             con.commit();
         } catch (SQLException | InterruptedException throwables) {
             throwables.printStackTrace();
@@ -167,6 +176,7 @@ public class UserService {
             pstmt.setString(1, username);
             pstmt.setDouble(2, 0.0);
             Integer insertedCount = pstmt.executeUpdate();
+            writeLock.release();
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     user.setId(generatedKeys.getInt(1));
@@ -174,7 +184,6 @@ public class UserService {
                     throw new SQLException("Creating user failed, no ID obtained.");
                 }
             }
-            writeLock.release();
         }
         catch (SQLException | InterruptedException e){
             e.printStackTrace();

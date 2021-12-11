@@ -43,7 +43,7 @@ public class TransactionService {
 
     }
 
-    public void insertTransactionWithConnection(Transaction transaction, Connection con) throws SQLException, InterruptedException{
+    public void insertTransaction(Transaction transaction, Connection con) throws SQLException, InterruptedException{
         String insertTransactionSql = "INSERT INTO transaction(buyer_id, seller_id, company_id, number_of_units, price_per_unit, date) VALUES (?, ?, ?, ?, ?, ?)";
         try(PreparedStatement statement = con.prepareStatement(insertTransactionSql)){
             writeLock.acquire();
