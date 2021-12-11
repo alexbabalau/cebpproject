@@ -28,6 +28,21 @@ public class CompanyShareService {
     private CompanyShareService(){
 
     }
+    private void startRead() throws InterruptedException{
+        mutex.acquire();
+        numberReads += 1;
+        if(numberReads == 1)
+            writeLock.acquire();
+        mutex.release();
+    }
+
+    private void endRead() throws InterruptedException{
+        mutex.acquire();
+        numberReads -= 1;
+        if(numberReads == 0)
+            writeLock.release();
+        mutex.release();
+    }
 
     public CompanyShare getCompanyShareByCompanyIdAndOwnerIdForUpdateWithConnection(Integer companyId,
                                                                                     Integer ownerId,
@@ -35,24 +50,17 @@ public class CompanyShareService {
         String sql = "SELECT * FROM company_share where company_id = ? AND owner_id = ?";
         CompanyShare companyShare = null;
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            mutex.acquire();
-            numberReads += 1;
-            if(numberReads == 1)
-                writeLock.acquire();
-            mutex.release();
+            startRead();
             pstmt.setInt(1, companyId);
             pstmt.setInt(2, ownerId);
             try(ResultSet resultSet = pstmt.executeQuery()){
                 if(!resultSet.next()){
+                    endRead();
                     return null;
                 }
                 companyShare = CompanyShare.getCompanyShareFromResultSet(resultSet);
             }
-            mutex.acquire();
-            numberReads -= 1;
-            if(numberReads == 0)
-                writeLock.release();
-            mutex.release();
+            endRead();
         }
         catch (SQLException | InterruptedException e) {
             e.printStackTrace();
@@ -74,10 +82,12 @@ public class CompanyShareService {
 
 
             try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+                writeLock.acquire();
                 pstmt.setInt(1, numberOfUnits);
                 pstmt.setInt(2, companyId);
                 pstmt.setInt(3, ownerId);
                 Integer modifiedValues = pstmt.executeUpdate();
+                writeLock.release();
                 if(modifiedValues.equals(0)){
                     throw new SQLException("Company Shares adding failed");
                 }

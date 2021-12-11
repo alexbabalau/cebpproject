@@ -23,6 +23,22 @@ public class TransactionService {
         return instance;
     }
 
+    private void startRead() throws InterruptedException{
+        mutex.acquire();
+        numberReads += 1;
+        if(numberReads == 1)
+            writeLock.acquire();
+        mutex.release();
+    }
+
+    private void endRead() throws InterruptedException{
+        mutex.acquire();
+        numberReads -= 1;
+        if(numberReads == 0)
+            writeLock.release();
+        mutex.release();
+    }
+
     private TransactionService(){
 
     }
@@ -54,20 +70,12 @@ public class TransactionService {
                         "WHERE company_id = C.id)";
 
         try(PreparedStatement preparedStatement = con.prepareStatement(listStockSql)){
-            mutex.acquire();
-            numberReads += 1;
-            if(numberReads == 1)
-                writeLock.acquire();
-            mutex.release();
+            startRead();
             ResultSet resultSet = preparedStatement.executeQuery();
             while(resultSet.next()){
                 stockPrices.add(StockPrice.getStockPriceFromResultSet(resultSet));
             }
-            mutex.acquire();
-            numberReads += 1;
-            if(numberReads == 1)
-                writeLock.acquire();
-            mutex.release();
+            endRead();
         }
         catch (SQLException | InterruptedException ex) {
             throw ex;
