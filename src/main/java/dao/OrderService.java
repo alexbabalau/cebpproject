@@ -25,12 +25,8 @@ public class OrderService {
     private Semaphore buyMutex = new Semaphore(1, true);
     private Semaphore buyWriteLock = new Semaphore(1, true);
 
-    private Semaphore transactionMutex = new Semaphore(1, true);
-    private Semaphore transactionWriteLock = new Semaphore(1, true);
-
     private Integer sellReads = 0;
     private Integer buyReads = 0;
-    private Integer transactionReads = 0;
 
     private OrderService(){
 
@@ -107,6 +103,7 @@ public class OrderService {
                 buyReads -= 1;
                 if (buyReads == 0)
                     buyWriteLock.release();
+                buyMutex.release();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -143,6 +140,7 @@ public class OrderService {
                 sellReads -= 1;
                 if (sellReads == 0)
                     sellWriteLock.release();
+                sellMutex.release();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -180,6 +178,7 @@ public class OrderService {
                 buyReads -= 1;
                 if (buyReads == 0)
                     buyWriteLock.release();
+                buyMutex.release();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -566,41 +565,6 @@ public class OrderService {
         return "Successful";
     }
 
-    public List<Transaction> getTransactionHistory(String username) throws SQLException, InterruptedException {
-        List<Transaction> transactions = new ArrayList<>();
-        try (Connection con = DriverManager
-                .getConnection(DB_URL, DB_USER, DB_PASS)) {
-            String sql = "SELECT * FROM transaction " +
-                    "WHERE id IN (" +
-                    "   SELECT T.id from transaction T JOIN User U ON (T.buyer_id = U.id OR T.seller_id = U.id)" +
-                    "       WHERE  U.username = ?)" +
-                    "ORDER BY date;";
 
-            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-                transactionMutex.acquire();
-                transactionReads += 1;
-                if (transactionReads == 1)
-                    transactionWriteLock.acquire();
-                transactionMutex.release();
-                pstmt.setString(1, username);
-                try (ResultSet resultSet = pstmt.executeQuery()) {
-                    while (resultSet.next()) {
-                        Transaction transaction = Transaction.getTransactionFromResultSet(resultSet);
-                        transactions.add(transaction);
-                    }
-                }
-                transactionMutex.acquire();
-                transactionReads -= 1;
-                if (transactionReads == 0)
-                    transactionWriteLock.release();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
-        } catch (InterruptedException e) {
-            throw e;
-        }
-        return transactions;
-    }
 }
 

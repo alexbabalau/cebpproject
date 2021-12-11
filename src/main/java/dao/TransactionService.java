@@ -100,5 +100,34 @@ public class TransactionService {
         return stockPrices;
     }
 
+    public List<Transaction> getTransactionHistory(String username) throws SQLException, InterruptedException {
+        List<Transaction> transactions = new ArrayList<>();
+        try (Connection con = DriverManager
+                .getConnection(DB_URL, DB_USER, DB_PASS)) {
+            String sql = "SELECT * FROM transaction " +
+                    "WHERE id IN (" +
+                    "   SELECT T.id from transaction T JOIN User U ON (T.buyer_id = U.id OR T.seller_id = U.id)" +
+                    "       WHERE  U.username = ?)" +
+                    "ORDER BY date;";
+
+            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+                startRead();
+                pstmt.setString(1, username);
+                try (ResultSet resultSet = pstmt.executeQuery()) {
+                    while (resultSet.next()) {
+                        Transaction transaction = Transaction.getTransactionFromResultSet(resultSet);
+                        transactions.add(transaction);
+                    }
+                }
+                endRead();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } catch (InterruptedException e) {
+            throw e;
+        }
+        return transactions;
+    }
 
 }
