@@ -5,6 +5,8 @@ import models.Company;
 import models.User;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CompanyService {
 
@@ -20,6 +22,24 @@ public class CompanyService {
 
     private CompanyService(){
 
+    }
+
+    public List<String> getCompanyCodes(){
+        List<String> codes = new ArrayList<>();
+        try(Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)){
+            String sql = "SELECT code FROM company";
+            try(PreparedStatement statement = connection.prepareStatement(sql)){
+                try(ResultSet resultSet = statement.executeQuery()){
+                    while (resultSet.next()){
+                        codes.add(resultSet.getString("code"));
+                    }
+                }
+            }
+        }
+        catch(SQLException ex){
+            ex.printStackTrace();
+        }
+        return codes;
     }
 
     public String addStocks(Connection connection, User currentUser, Integer numberOfUnits){
