@@ -22,10 +22,8 @@ public class CompanyService {
 
     }
 
-    public String addStocks(User currentUser, Integer numberOfUnits){
-        Connection connection = null;
+    public String addStocks(Connection connection, User currentUser, Integer numberOfUnits){
         try{
-            connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
             connection.setAutoCommit(false);
             String companyCode = currentUser.getUsername();
             Company company = null;
@@ -50,7 +48,7 @@ public class CompanyService {
         return "Successful";
     }
 
-    public Company findByCodeWithConnection(String code, Connection connection){
+    public Company findByCodeWithConnection(String code, Connection connection) throws SQLException{
         String sql = "SELECT * FROM company where code = ?";
         Company company = null;
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -65,13 +63,14 @@ public class CompanyService {
         }
         catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
         return company;
     }
 
-    public Company findByCode(String code){
+    public Company findByCode(Connection connection, String code){
         Company company = null;
-        try(Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+        try {
             company = findByCodeWithConnection(code, connection);
         } catch (SQLException throwables) {
             throwables.printStackTrace();

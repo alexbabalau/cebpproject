@@ -14,10 +14,6 @@ public class OrderService {
 
     private static OrderService instance;
 
-    private final String DB_URL = "jdbc:mysql://localhost:3306/stock-market?useSSL=false";
-    private final String DB_USER = "stock-market";
-    private final String DB_PASS = "password";
-
     private Semaphore sellMutex = new Semaphore(1, true);
     private Semaphore sellWriteLock = new Semaphore(1, true);
 
@@ -37,35 +33,34 @@ public class OrderService {
         return instance;
     }
 
-    public List<SellOrder> getCompanySellOrders(String companyCode) throws SQLException, InterruptedException{
+    public List<SellOrder> getCompanySellOrders(Connection connection, String companyCode) throws SQLException, InterruptedException{
         List<SellOrder> sellOrders = new ArrayList<>();
-        try (Connection con = DriverManager
-                .getConnection(DB_URL, DB_USER, DB_PASS)) {
-            String sql = "SELECT * FROM sell_order " +
-                    "WHERE id IN (" +
-                    "   SELECT S.id from sell_order S JOIN Company C ON S.company_id = C.id" +
-                    "       WHERE C.code = ?)" +
-                    "ORDER BY price_per_unit;";
-            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-                sellMutex.acquire();
-                sellReads += 1;
-                if(sellReads == 1)
-                    sellWriteLock.acquire();
-                sellMutex.release();
-                pstmt.setString(1, companyCode);
-                try(ResultSet resultSet = pstmt.executeQuery()){
-                    while(resultSet.next()){
-                        SellOrder sellOrder = SellOrder.getSellOrderFromResultSet(resultSet);
-                        sellOrders.add(sellOrder);
-                    }
+
+        String sql = "SELECT * FROM sell_order " +
+                "WHERE id IN (" +
+                "   SELECT S.id from sell_order S JOIN Company C ON S.company_id = C.id" +
+                "       WHERE C.code = ?)" +
+                "ORDER BY price_per_unit;";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            sellMutex.acquire();
+            sellReads += 1;
+            if(sellReads == 1)
+                sellWriteLock.acquire();
+            sellMutex.release();
+            pstmt.setString(1, companyCode);
+            try(ResultSet resultSet = pstmt.executeQuery()){
+                while(resultSet.next()){
+                    SellOrder sellOrder = SellOrder.getSellOrderFromResultSet(resultSet);
+                    sellOrders.add(sellOrder);
                 }
-                sellMutex.acquire();
-                sellReads -= 1;
-                if(sellReads == 0)
-                    sellWriteLock.release();
-                sellMutex.release();
             }
-        } catch (SQLException e) {
+            sellMutex.acquire();
+            sellReads -= 1;
+            if(sellReads == 0)
+                sellWriteLock.release();
+            sellMutex.release();
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             throw e;
         }
@@ -75,36 +70,34 @@ public class OrderService {
         return sellOrders;
     }
 
-    public List<BuyOrder> getCompanyBuyOrders(String companyCode) throws SQLException, InterruptedException {
+    public List<BuyOrder> getCompanyBuyOrders(Connection connection, String companyCode) throws SQLException, InterruptedException {
         List<BuyOrder> buyOrders = new ArrayList<>();
-        try (Connection con = DriverManager
-                .getConnection(DB_URL, DB_USER, DB_PASS)) {
-            String sql = "SELECT * FROM buy_order " +
-                    "WHERE id IN (" +
-                    "   SELECT B.id from buy_order B JOIN Company C ON B.company_id = C.id" +
-                    "       WHERE C.code = ?)" +
-                    "ORDER BY price_per_unit;";
+        String sql = "SELECT * FROM buy_order " +
+                "WHERE id IN (" +
+                "   SELECT B.id from buy_order B JOIN Company C ON B.company_id = C.id" +
+                "       WHERE C.code = ?)" +
+                "ORDER BY price_per_unit;";
 
-            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-                buyMutex.acquire();
-                buyReads += 1;
-                if (buyReads == 1)
-                    buyWriteLock.acquire();
-                buyMutex.release();
-                pstmt.setString(1, companyCode);
-                try (ResultSet resultSet = pstmt.executeQuery()) {
-                    while (resultSet.next()) {
-                        BuyOrder sellOrder = BuyOrder.getBuyOrderFromResultSet(resultSet);
-                        buyOrders.add(sellOrder);
-                    }
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            buyMutex.acquire();
+            buyReads += 1;
+            if (buyReads == 1)
+                buyWriteLock.acquire();
+            buyMutex.release();
+            pstmt.setString(1, companyCode);
+            try (ResultSet resultSet = pstmt.executeQuery()) {
+                while (resultSet.next()) {
+                    BuyOrder sellOrder = BuyOrder.getBuyOrderFromResultSet(resultSet);
+                    buyOrders.add(sellOrder);
                 }
-                buyMutex.acquire();
-                buyReads -= 1;
-                if (buyReads == 0)
-                    buyWriteLock.release();
-                buyMutex.release();
             }
-        } catch (SQLException e) {
+            buyMutex.acquire();
+            buyReads -= 1;
+            if (buyReads == 0)
+                buyWriteLock.release();
+            buyMutex.release();
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             throw e;
         } catch (InterruptedException e) {
@@ -113,34 +106,32 @@ public class OrderService {
         return buyOrders;
     }
 
-    public List<SellOrder> getUserSellOrders(String username) throws SQLException, InterruptedException {
+    public List<SellOrder> getUserSellOrders(Connection connection, String username) throws SQLException, InterruptedException {
         List<SellOrder> sellOrders = new ArrayList<>();
-        try (Connection con = DriverManager
-                .getConnection(DB_URL, DB_USER, DB_PASS)) {
-            String sql = "SELECT * FROM sell_order " +
-                    "WHERE id IN (" +
-                    "   SELECT S.id from sell_order S JOIN User U ON S.owner_id = U.id" +
-                    "       WHERE U.username = ?)" +
-                    "ORDER BY price_per_unit;";
-            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-                sellMutex.acquire();
-                sellReads += 1;
-                if (sellReads == 1)
-                    sellWriteLock.acquire();
-                sellMutex.release();
-                pstmt.setString(1, username);
-                try (ResultSet resultSet = pstmt.executeQuery()) {
-                    while (resultSet.next()) {
-                        SellOrder sellOrder = SellOrder.getSellOrderFromResultSet(resultSet);
-                        sellOrders.add(sellOrder);
-                    }
+        
+        String sql = "SELECT * FROM sell_order " +
+                "WHERE id IN (" +
+                "   SELECT S.id from sell_order S JOIN User U ON S.owner_id = U.id" +
+                "       WHERE U.username = ?)" +
+                "ORDER BY price_per_unit;";
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            sellMutex.acquire();
+            sellReads += 1;
+            if (sellReads == 1)
+                sellWriteLock.acquire();
+            sellMutex.release();
+            pstmt.setString(1, username);
+            try (ResultSet resultSet = pstmt.executeQuery()) {
+                while (resultSet.next()) {
+                    SellOrder sellOrder = SellOrder.getSellOrderFromResultSet(resultSet);
+                    sellOrders.add(sellOrder);
                 }
-                sellMutex.acquire();
-                sellReads -= 1;
-                if (sellReads == 0)
-                    sellWriteLock.release();
-                sellMutex.release();
             }
+            sellMutex.acquire();
+            sellReads -= 1;
+            if (sellReads == 0)
+                sellWriteLock.release();
+            sellMutex.release();
         } catch (SQLException e) {
             e.printStackTrace();
             throw e;
@@ -150,36 +141,34 @@ public class OrderService {
         return sellOrders;
     }
 
-    public List<BuyOrder> getUserBuyOrders(String username) throws SQLException, InterruptedException {
+    public List<BuyOrder> getUserBuyOrders(Connection connection, String username) throws SQLException, InterruptedException {
         List<BuyOrder> buyOrders = new ArrayList<>();
-        try (Connection con = DriverManager
-                .getConnection(DB_URL, DB_USER, DB_PASS)) {
-            String sql = "SELECT * FROM buy_order " +
-                    "WHERE id IN (" +
-                    "   SELECT B.id from buy_order B JOIN User U ON B.company_id = U.id" +
-                    "       WHERE U.username = ?)" +
-                    "ORDER BY price_per_unit;";
+        String sql = "SELECT * FROM buy_order " +
+                "WHERE id IN (" +
+                "   SELECT B.id from buy_order B JOIN User U ON B.company_id = U.id" +
+                "       WHERE U.username = ?)" +
+                "ORDER BY price_per_unit;";
 
-            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-                buyMutex.acquire();
-                buyReads += 1;
-                if (buyReads == 1)
-                    buyWriteLock.acquire();
-                buyMutex.release();
-                pstmt.setString(1, username);
-                try (ResultSet resultSet = pstmt.executeQuery()) {
-                    while (resultSet.next()) {
-                        BuyOrder sellOrder = BuyOrder.getBuyOrderFromResultSet(resultSet);
-                        buyOrders.add(sellOrder);
-                    }
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            buyMutex.acquire();
+            buyReads += 1;
+            if (buyReads == 1)
+                buyWriteLock.acquire();
+            buyMutex.release();
+            pstmt.setString(1, username);
+            try (ResultSet resultSet = pstmt.executeQuery()) {
+                while (resultSet.next()) {
+                    BuyOrder sellOrder = BuyOrder.getBuyOrderFromResultSet(resultSet);
+                    buyOrders.add(sellOrder);
                 }
-                buyMutex.acquire();
-                buyReads -= 1;
-                if (buyReads == 0)
-                    buyWriteLock.release();
-                buyMutex.release();
             }
-        } catch (SQLException e) {
+            buyMutex.acquire();
+            buyReads -= 1;
+            if (buyReads == 0)
+                buyWriteLock.release();
+            buyMutex.release();
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             throw e;
         } catch (InterruptedException e) {
@@ -189,11 +178,11 @@ public class OrderService {
     }
 
 
-    private List<BuyOrder> getBuyOrdersGreaterThanFromCompanyId(Integer companyId, Double minPrice, Connection con) throws SQLException, InterruptedException {
+    private List<BuyOrder> getBuyOrdersGreaterThanFromCompanyId(Integer companyId, Double minPrice, Connection connection) throws SQLException, InterruptedException {
         String sql = "SELECT * FROM buy_order WHERE company_id = ? AND price_per_unit >= ? ORDER BY price_per_unit DESC FOR UPDATE";
         List<BuyOrder> buyOrders = new ArrayList<>();
 
-        try(PreparedStatement pstmt = con.prepareStatement(sql)){
+        try(PreparedStatement pstmt = connection.prepareStatement(sql)){
             buyMutex.acquire();
             buyReads += 1;
             if(buyReads == 1)
@@ -296,9 +285,9 @@ public class OrderService {
         }
     }
 
-    private SellOrder insertSellOrder(SellOrder sellOrder, Connection con) throws SQLException, InterruptedException{
+    private SellOrder insertSellOrder(SellOrder sellOrder, Connection connection) throws SQLException, InterruptedException{
         String insertSellOrderSql = "INSERT INTO sell_order(company_id, owner_id, number_of_units, price_per_unit,date)  VALUES(?, ?, ?, ?, ?);";
-        try (PreparedStatement pstmt = con.prepareStatement(insertSellOrderSql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(insertSellOrderSql, Statement.RETURN_GENERATED_KEYS)) {
             sellWriteLock.acquire();
             pstmt.setInt(1, sellOrder.getCompanyId());
             pstmt.setInt(2, sellOrder.getOwnerId());
@@ -325,9 +314,9 @@ public class OrderService {
 
     }
 
-    private BuyOrder insertBuyOrderWithConnection(BuyOrder buyOrder, Connection con) throws SQLException, InterruptedException{
+    private BuyOrder insertBuyOrderWithConnection(BuyOrder buyOrder, Connection connection) throws SQLException, InterruptedException{
         String insertBuyOrderSql = "INSERT INTO buy_order(company_id, owner_id, number_of_units, price_per_unit,date)  VALUES(?, ?, ?, ?, ?);";
-        try (PreparedStatement pstmt = con.prepareStatement(insertBuyOrderSql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(insertBuyOrderSql, Statement.RETURN_GENERATED_KEYS)) {
             buyWriteLock.acquire();
             pstmt.setInt(1, buyOrder.getCompanyId());
             pstmt.setInt(2, buyOrder.getOwnerId());
@@ -351,14 +340,13 @@ public class OrderService {
         }
     }
 
-    public synchronized String addBuyOrder(String companyCode, Integer numberOfUnits, Double pricePerUnit, User user) throws SQLException {
+    public synchronized String addBuyOrder(Connection connection, String companyCode, Integer numberOfUnits, Double pricePerUnit, User user) throws SQLException {
 
         if (user == null) {
             return "Error: not authenticated";
         }
 
         Integer ownerId = user.getId();
-        Connection con = null;
 
         BuyOrder buyOrder = new BuyOrder();
         buyOrder.setNumberOfUnits(numberOfUnits);
@@ -367,84 +355,83 @@ public class OrderService {
         buyOrder.setPricePerUnit(pricePerUnit);
 
         try {
-            con = DriverManager
-                    .getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
+            
+            connection.setAutoCommit(false);
             //Double totalPrice =
-            Company company = CompanyService.getInstance().findByCodeWithConnection(companyCode, con);
+            Company company = CompanyService.getInstance().findByCodeWithConnection(companyCode, connection);
             buyOrder.setCompanyId(company.getId());
-            List<SellOrder> sellOrders = getSellOrdersLessThanFromCompanyIdForUpdateWithConnection(company.getId(), pricePerUnit, con);
+            List<SellOrder> sellOrders = getSellOrdersLessThanFromCompanyIdForUpdateWithConnection(company.getId(), pricePerUnit, connection);
             Integer totalUnits = numberOfUnits;
             Double totalPrice = 0.0;
             for (SellOrder sellOrder : sellOrders) {
                 if (sellOrder.getOwnerId().equals(ownerId))
                     continue;
-                CompanyShare sellerCompanyShares = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerId(company.getId(), sellOrder.getOwnerId(), con);
+                CompanyShare sellerCompanyShares = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerId(company.getId(), sellOrder.getOwnerId(), connection);
                 sellOrder.setNumberOfUnits(Math.min(sellerCompanyShares.getNumberOfUnits(), sellOrder.getNumberOfUnits()));
                 if (numberOfUnits >= sellOrder.getNumberOfUnits()) {
                     try{
-                        UserService.getInstance().updateMoneyWithId(ownerId, -sellOrder.getPricePerUnit() * sellOrder.getNumberOfUnits(), con);
+                        UserService.getInstance().updateMoneyWithId(ownerId, -sellOrder.getPricePerUnit() * sellOrder.getNumberOfUnits(), connection);
                     }
                     catch (NegativeBalanceException ex){
                         numberOfUnits = 0;
                         break;
                     }
                     try {
-                        CompanyShareService.getInstance().addCompanyShares(company.getId(), sellOrder.getOwnerId(), -sellOrder.getNumberOfUnits(), con);
+                        CompanyShareService.getInstance().addCompanyShares(company.getId(), sellOrder.getOwnerId(), -sellOrder.getNumberOfUnits(), connection);
                     } catch (NegativeBalanceException ex) {
-                        UserService.getInstance().updateMoneyWithId(ownerId, sellOrder.getPricePerUnit() * sellOrder.getNumberOfUnits(), con);
-                        deleteSellOrderWithId(sellOrder.getId(), con);
+                        UserService.getInstance().updateMoneyWithId(ownerId, sellOrder.getPricePerUnit() * sellOrder.getNumberOfUnits(), connection);
+                        deleteSellOrderWithId(sellOrder.getId(), connection);
                         continue;
                     }
-                    CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), sellOrder.getNumberOfUnits(), con);
-                    UserService.getInstance().updateMoneyWithId(sellOrder.getOwnerId(), sellOrder.getPricePerUnit() * sellOrder.getNumberOfUnits(), con);
+                    CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), sellOrder.getNumberOfUnits(), connection);
+                    UserService.getInstance().updateMoneyWithId(sellOrder.getOwnerId(), sellOrder.getPricePerUnit() * sellOrder.getNumberOfUnits(), connection);
                     Transaction transaction = Transaction.getTransactionFromBuyAndSellOrder(buyOrder, sellOrder);
-                    TransactionService.getInstance().insertTransaction(transaction, con);
+                    TransactionService.getInstance().insertTransaction(transaction, connection);
                     System.out.println(sellOrder.getId());
-                    deleteSellOrderWithId(sellOrder.getId(), con);
+                    deleteSellOrderWithId(sellOrder.getId(), connection);
 
                     numberOfUnits -= sellOrder.getNumberOfUnits();
                     buyOrder.setNumberOfUnits(numberOfUnits);
                     totalPrice += pricePerUnit * sellOrder.getNumberOfUnits();
                 } else {
                     try{
-                        UserService.getInstance().updateMoneyWithId(ownerId, -sellOrder.getPricePerUnit() * numberOfUnits, con);
+                        UserService.getInstance().updateMoneyWithId(ownerId, -sellOrder.getPricePerUnit() * numberOfUnits, connection);
                     }
                     catch (NegativeBalanceException ex){
                         numberOfUnits = 0;
                         break;
                     }
                     try {
-                        CompanyShareService.getInstance().addCompanyShares(company.getId(), sellOrder.getOwnerId(), -numberOfUnits, con);
+                        CompanyShareService.getInstance().addCompanyShares(company.getId(), sellOrder.getOwnerId(), -numberOfUnits, connection);
                     } catch (NegativeBalanceException ex) {
-                        UserService.getInstance().updateMoneyWithId(ownerId, sellOrder.getPricePerUnit() * numberOfUnits, con);
-                        deleteSellOrderWithId(sellOrder.getId(), con);
+                        UserService.getInstance().updateMoneyWithId(ownerId, sellOrder.getPricePerUnit() * numberOfUnits, connection);
+                        deleteSellOrderWithId(sellOrder.getId(), connection);
                         continue;
                     }
-                    CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), numberOfUnits, con);
-                    UserService.getInstance().updateMoneyWithId(sellOrder.getOwnerId(), sellOrder.getPricePerUnit() * numberOfUnits, con);
+                    CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), numberOfUnits, connection);
+                    UserService.getInstance().updateMoneyWithId(sellOrder.getOwnerId(), sellOrder.getPricePerUnit() * numberOfUnits, connection);
                     Transaction transaction = Transaction.getTransactionFromBuyAndSellOrder(buyOrder, sellOrder);
-                    TransactionService.getInstance().insertTransaction(transaction, con);
+                    TransactionService.getInstance().insertTransaction(transaction, connection);
                     sellOrder.setNumberOfUnits(sellOrder.getNumberOfUnits() - numberOfUnits);
                     numberOfUnits = 0;
-                    updateSellOrderWithIdWithConnection(sellOrder.getId(), sellOrder, con);
+                    updateSellOrderWithIdWithConnection(sellOrder.getId(), sellOrder, connection);
                     break;
                 }
             }
             if (!numberOfUnits.equals(0)) {
 
                 buyOrder.setNumberOfUnits(numberOfUnits);
-                insertBuyOrderWithConnection(buyOrder, con);
+                insertBuyOrderWithConnection(buyOrder, connection);
             }
 
 
 
-            con.commit();
+            connection.commit();
         } catch (SQLException | InterruptedException e) {
             e.printStackTrace();
             try {
-                if (con != null)
-                    con.rollback();
+                if (connection != null)
+                    connection.rollback();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
@@ -455,12 +442,12 @@ public class OrderService {
         return "Successful";
     }
 
-    private List<SellOrder> getSellOrdersLessThanFromCompanyIdForUpdateWithConnection(Integer companyId, Double maxPrice, Connection con) throws SQLException, InterruptedException {
+    private List<SellOrder> getSellOrdersLessThanFromCompanyIdForUpdateWithConnection(Integer companyId, Double maxPrice, Connection connection) throws SQLException, InterruptedException {
 
         String sql = "SELECT * FROM sell_order WHERE company_id = ? AND price_per_unit <= ? ORDER BY price_per_unit";
         List<SellOrder> sellOrders = new ArrayList<>();
 
-        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             sellMutex.acquire();
             sellReads += 1;
             if (sellReads == 1)
@@ -489,14 +476,13 @@ public class OrderService {
 
     }
 
-    public synchronized String addSellOrder(String companyCode, Integer numberOfUnits, Double pricePerUnit, User user) throws SQLException {
+    public synchronized String addSellOrder(Connection connection, String companyCode, Integer numberOfUnits, Double pricePerUnit, User user) throws SQLException {
 
         if (user == null) {
             return "Error: not authenticated";
         }
 
         Integer ownerId = user.getId();
-        Connection con = null;
 
         SellOrder sellOrder = new SellOrder();
         sellOrder.setNumberOfUnits(numberOfUnits);
@@ -506,31 +492,28 @@ public class OrderService {
 
 
         try {
-            con = DriverManager
-                    .getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
-            Company company = CompanyService.getInstance().findByCodeWithConnection(companyCode, con);
+
+            connection.setAutoCommit(false);
+            Company company = CompanyService.getInstance().findByCodeWithConnection(companyCode, connection);
             CompanyShare companyShare = null;
-            try {
-                companyShare = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerId(company.getId(), ownerId, con);
-            } catch (ResourceNotFoundException e) {
-                return "No shares found";
-            }
-            if (companyShare.getNumberOfUnits() < numberOfUnits)
+
+            companyShare = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerId(company.getId(), ownerId, connection);
+
+            if (companyShare == null || companyShare.getNumberOfUnits() < numberOfUnits)
                 throw new NotEnoughUnitsException("Not enough units to sell");
-            List<BuyOrder> buyOrders = getBuyOrdersGreaterThanFromCompanyId(company.getId(), pricePerUnit, con);
+            List<BuyOrder> buyOrders = getBuyOrdersGreaterThanFromCompanyId(company.getId(), pricePerUnit, connection);
             Integer totalUnits = numberOfUnits;
             Double totalPrice = 0.0;
             sellOrder.setCompanyId(company.getId());
             for (BuyOrder buyOrder : buyOrders) {
                 if (buyOrder.getOwnerId().equals(ownerId))
                     continue;
-                //CompanyShare buyerCompanyShares = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerId(company.getId(), buyOrder.getOwnerId(), con);
+                //CompanyShare buyerCompanyShares = CompanyShareService.getInstance().getCompanyShareByCompanyIdAndOwnerId(company.getId(), buyOrder.getOwnerId(), connection);
                 //buyOrder.setNumberOfUnits(Math.min(buyerCompanyShares.getNumberOfUnits(), buyOrder.getNumberOfUnits()));
                 if (numberOfUnits >= buyOrder.getNumberOfUnits()) {
 
                     try {
-                        CompanyShareService.getInstance().addCompanyShares(company.getId(), ownerId, -buyOrder.getNumberOfUnits(), con);
+                        CompanyShareService.getInstance().addCompanyShares(company.getId(), ownerId, -buyOrder.getNumberOfUnits(), connection);
 
                     } catch (NegativeBalanceException ex) {
                         numberOfUnits = 0;
@@ -538,62 +521,62 @@ public class OrderService {
                     }
 
                     try{
-                        UserService.getInstance().updateMoneyWithId(buyOrder.getOwnerId(), -buyOrder.getNumberOfUnits() * sellOrder.getPricePerUnit(), con);
+                        UserService.getInstance().updateMoneyWithId(buyOrder.getOwnerId(), -buyOrder.getNumberOfUnits() * sellOrder.getPricePerUnit(), connection);
                     }
                     catch (NegativeBalanceException ex){
-                        deleteBuyOrderWithId(buyOrder.getId(), con);
-                        CompanyShareService.getInstance().addCompanyShares(company.getId(), ownerId, buyOrder.getNumberOfUnits(), con);
+                        deleteBuyOrderWithId(buyOrder.getId(), connection);
+                        CompanyShareService.getInstance().addCompanyShares(company.getId(), ownerId, buyOrder.getNumberOfUnits(), connection);
                         continue;
                     }
-                    CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), buyOrder.getNumberOfUnits(), con);
-                    UserService.getInstance().updateMoneyWithId(ownerId, buyOrder.getNumberOfUnits() * sellOrder.getPricePerUnit(), con);
+                    CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), buyOrder.getNumberOfUnits(), connection);
+                    UserService.getInstance().updateMoneyWithId(ownerId, buyOrder.getNumberOfUnits() * sellOrder.getPricePerUnit(), connection);
                     Transaction transaction = Transaction.getTransactionFromBuyAndSellOrder(buyOrder, sellOrder);
 
-                    TransactionService.getInstance().insertTransaction(transaction, con);
+                    TransactionService.getInstance().insertTransaction(transaction, connection);
 
-                    deleteBuyOrderWithId(buyOrder.getId(), con);
+                    deleteBuyOrderWithId(buyOrder.getId(), connection);
 
                     numberOfUnits -= buyOrder.getNumberOfUnits();
                     sellOrder.setNumberOfUnits(numberOfUnits);
                     totalPrice += pricePerUnit * buyOrder.getNumberOfUnits();
                 } else {
                     try {
-                        CompanyShareService.getInstance().addCompanyShares(company.getId(), ownerId, -numberOfUnits, con);
+                        CompanyShareService.getInstance().addCompanyShares(company.getId(), ownerId, -numberOfUnits, connection);
                     } catch (NegativeBalanceException ex) {
                         numberOfUnits = 0;
                         break;
                     }
                     try{
-                        UserService.getInstance().updateMoneyWithId(buyOrder.getOwnerId(), -numberOfUnits * sellOrder.getPricePerUnit(), con);
+                        UserService.getInstance().updateMoneyWithId(buyOrder.getOwnerId(), -numberOfUnits * sellOrder.getPricePerUnit(), connection);
                     }
                     catch (NegativeBalanceException ex){
-                        CompanyShareService.getInstance().addCompanyShares(company.getId(), ownerId, numberOfUnits, con);
-                        deleteBuyOrderWithId(buyOrder.getId(), con);
+                        CompanyShareService.getInstance().addCompanyShares(company.getId(), ownerId, numberOfUnits, connection);
+                        deleteBuyOrderWithId(buyOrder.getId(), connection);
                         continue;
                     }
                     Transaction transaction = Transaction.getTransactionFromBuyAndSellOrder(buyOrder, sellOrder);
 
-                    TransactionService.getInstance().insertTransaction(transaction, con);
+                    TransactionService.getInstance().insertTransaction(transaction, connection);
 
-                    CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), numberOfUnits, con);
-                    UserService.getInstance().updateMoneyWithId(ownerId, sellOrder.getPricePerUnit() * numberOfUnits, con);
+                    CompanyShareService.getInstance().addCompanyShares(company.getId(), buyOrder.getOwnerId(), numberOfUnits, connection);
+                    UserService.getInstance().updateMoneyWithId(ownerId, sellOrder.getPricePerUnit() * numberOfUnits, connection);
                     buyOrder.setNumberOfUnits(buyOrder.getNumberOfUnits() - numberOfUnits);
                     numberOfUnits = 0;
-                    updateBuyOrderWithIdWithConnection(buyOrder.getId(), buyOrder, con);
+                    updateBuyOrderWithIdWithConnection(buyOrder.getId(), buyOrder, connection);
                     break;
                 }
             }
             if (!numberOfUnits.equals(0)) {
                 sellOrder.setNumberOfUnits(numberOfUnits);
-                insertSellOrder(sellOrder, con);
+                insertSellOrder(sellOrder, connection);
             }
 
-            con.commit();
+            connection.commit();
         } catch (SQLException | InterruptedException e) {
             e.printStackTrace();
             try {
-                if (con != null)
-                    con.rollback();
+                if (connection != null)
+                    connection.rollback();
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }

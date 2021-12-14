@@ -4,16 +4,17 @@ import dao.TransactionService;
 import models.User;
 import models.transientModels.StockPrice;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 public class ListStockPricesCommand implements Command{
     @Override
-    public String runCommand(User currentUser, String[] args) {
+    public String runCommand(Connection connection, User currentUser, String[] args) {
         List<StockPrice> stockPrices = null;
 
         try{
-            stockPrices = TransactionService.getInstance().getStockPrices();
+            stockPrices = TransactionService.getInstance().getStockPrices(connection);
         }
         catch (SQLException | InterruptedException ex){
             return "Error in listing stock prices: " + ex.getMessage();

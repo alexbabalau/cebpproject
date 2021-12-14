@@ -88,45 +88,43 @@ public class TransactionService {
         return stockPrices;
     }
 
-    public List<StockPrice> getStockPrices() throws SQLException, InterruptedException{
-        Connection con = null;
+    public List<StockPrice> getStockPrices(Connection connection) throws SQLException, InterruptedException{
         List<StockPrice> stockPrices = null;
         try{
-            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
-            stockPrices = getLastTransactionsWithConnection(con);
-            con.commit();
+
+            connection.setAutoCommit(false);
+            stockPrices = getLastTransactionsWithConnection(connection);
+            connection.commit();
         }
         catch (SQLException | InterruptedException ex){
-            if(con != null)
-                con.rollback();
+            if(connection != null)
+                connection.rollback();
             throw ex;
         }
         return stockPrices;
     }
 
-    public List<Transaction> getTransactionHistory(String username) throws SQLException, InterruptedException {
+    public List<Transaction> getTransactionHistory(Connection connection, String username) throws SQLException, InterruptedException {
         List<Transaction> transactions = new ArrayList<>();
-        try (Connection con = DriverManager
-                .getConnection(DB_URL, DB_USER, DB_PASS)) {
-            String sql = "SELECT * FROM transaction " +
-                    "WHERE id IN (" +
-                    "   SELECT T.id from transaction T JOIN User U ON (T.buyer_id = U.id OR T.seller_id = U.id)" +
-                    "       WHERE  U.username = ?)" +
-                    "ORDER BY date;";
 
-            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-                startRead();
-                pstmt.setString(1, username);
-                try (ResultSet resultSet = pstmt.executeQuery()) {
-                    while (resultSet.next()) {
-                        Transaction transaction = Transaction.getTransactionFromResultSet(resultSet);
-                        transactions.add(transaction);
-                    }
+        String sql = "SELECT * FROM transaction " +
+                "WHERE id IN (" +
+                "   SELECT T.id from transaction T JOIN User U ON (T.buyer_id = U.id OR T.seller_id = U.id)" +
+                "       WHERE  U.username = ?)" +
+                "ORDER BY date;";
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            startRead();
+            pstmt.setString(1, username);
+            try (ResultSet resultSet = pstmt.executeQuery()) {
+                while (resultSet.next()) {
+                    Transaction transaction = Transaction.getTransactionFromResultSet(resultSet);
+                    transactions.add(transaction);
                 }
-                endRead();
             }
-        } catch (SQLException e) {
+            endRead();
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             throw e;
         } catch (InterruptedException e) {

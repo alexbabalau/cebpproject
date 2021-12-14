@@ -65,18 +65,16 @@ public class UserService {
 
     }
 
-    public String addMoney(User user, Double amount) {
-        Connection con = null;
+    public String addMoney(Connection connection, User user, Double amount) {
         Integer userId = user.getId();
         try {
-            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
-            updateMoneyWithId(userId, amount, con);
-            con.commit();
+            connection.setAutoCommit(false);
+            updateMoneyWithId(userId, amount, connection);
+            connection.commit();
         } catch (SQLException | InterruptedException throwables) {
             throwables.printStackTrace();
             try {
-                con.rollback();
+                connection.rollback();
             } catch (SQLException e) {
                 e.printStackTrace();
                 return "Rollback error";
@@ -87,8 +85,7 @@ public class UserService {
         return "Successful";
     }
 
-    public String withdrawMoney(User user, Double amount) {
-        Connection con = null;
+    public String withdrawMoney(Connection connection, User user, Double amount) {
 
         if(user == null){
             return "Please login!";
@@ -97,22 +94,22 @@ public class UserService {
         Integer userId = user.getId();
 
         try {
-            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
+
+            connection.setAutoCommit(false);
 
 
 
             try{
-                updateMoneyWithId(userId, -amount, con);
+                updateMoneyWithId(userId, -amount, connection);
             }
             catch (NegativeBalanceException ex){
                 return "Not enough money!";
             }
-            con.commit();
+            connection.commit();
         } catch (SQLException | InterruptedException throwables) {
             throwables.printStackTrace();
             try {
-                con.rollback();
+                connection.rollback();
             } catch (SQLException e) {
                 e.printStackTrace();
                 return "Rollback error";
@@ -193,24 +190,22 @@ public class UserService {
         return user;
     }
 
-    public User login(String username) throws Exception{
-        Connection con = null;
+    public User login(Connection connection, String username) throws Exception{
         User user;
 
         try {
-            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
+            connection.setAutoCommit(false);
 
-            user = getUserWithUsername(username, con);
+            user = getUserWithUsername(username, connection);
 
             if(user == null)
-                user = createUser(username, con);
+                user = createUser(username, connection);
 
-            con.commit();
+            connection.commit();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             try {
-                con.rollback();
+                connection.rollback();
             } catch (SQLException e) {
                 e.printStackTrace();
                 throw e;
@@ -222,24 +217,22 @@ public class UserService {
     }
 
 
-    public Integer getIdForUsername(String username) throws Exception{
-        Connection con = null;
+    public Integer getIdForUsername(Connection connection, String username) throws Exception{
         User user;
 
         try {
-            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
+            connection.setAutoCommit(false);
 
-            user = getUserWithUsername(username, con);
+            user = getUserWithUsername(username, connection);
 
             if(user == null)
-                user = createUser(username, con);
+                user = createUser(username, connection);
 
-            con.commit();
+            connection.commit();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             try {
-                con.rollback();
+                connection.rollback();
             } catch (SQLException e) {
                 e.printStackTrace();
                 throw e;
