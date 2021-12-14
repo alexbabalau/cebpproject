@@ -64,18 +64,23 @@ public class TransactionService {
     private List<StockPrice> getLastTransactionsWithConnection(Connection con) throws SQLException, InterruptedException{
         List<StockPrice> stockPrices = new ArrayList<>();
         String listStockSql =
-                "SELECT C.id as company_id, C.name as company_name, T.date, T.price_per_unit as price_per_unit FROM transaction T JOIN company C ON T.company_id = C.id " +
+                "SELECT C.id as company_id, C.code as company_code, T.date, T.price_per_unit as price_per_unit FROM transaction T JOIN company C ON T.company_id = C.id " +
                 "WHERE T.date >= ALL(" +
                         "SELECT date FROM transaction " +
-                        "WHERE company_id = C.id)";
+                        "WHERE company_id = C.id)" +
+                        "ORDER BY C.code";
 
         try(PreparedStatement preparedStatement = con.prepareStatement(listStockSql)){
             startRead();
             ResultSet resultSet = preparedStatement.executeQuery();
+            endRead();
             while(resultSet.next()){
+                StockPrice stockPrice = StockPrice.getStockPriceFromResultSet(resultSet);
+                if(stockPrices.size() > 0 && stockPrice.getCompanyCode().equals(stockPrices.get(stockPrices.size() - 1).getCompanyCode()))
+                    continue;
                 stockPrices.add(StockPrice.getStockPriceFromResultSet(resultSet));
             }
-            endRead();
+
         }
         catch (SQLException | InterruptedException ex) {
             throw ex;

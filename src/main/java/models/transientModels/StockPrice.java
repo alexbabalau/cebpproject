@@ -4,15 +4,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class StockPrice {
-    private String companyName;
+    private String companyCode;
     private Double price;
 
     public StockPrice(){
 
     }
 
-    public StockPrice(String companyName, Double price){
-        this.companyName = companyName;
+    public StockPrice(String companyCode, Double price){
+        this.companyCode = companyCode;
         this.price = price;
     }
 
@@ -20,17 +20,17 @@ public class StockPrice {
         StockPrice stockPrice = new StockPrice();
 
         stockPrice.setPrice(resultSet.getDouble("price_per_unit"));
-        stockPrice.setCompanyName(resultSet.getString("company_name"));
+        stockPrice.setCompanyCode(resultSet.getString("company_code"));
 
         return stockPrice;
     }
 
-    public String getCompanyName() {
-        return companyName;
+    public String getCompanyCode() {
+        return companyCode;
     }
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
+    public void setCompanyCode(String companyCode) {
+        this.companyCode = companyCode;
     }
 
     public Double getPrice() {

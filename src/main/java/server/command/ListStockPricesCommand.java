@@ -1,7 +1,6 @@
 package server.command;
 
 import dao.TransactionService;
-import models.Transaction;
 import models.User;
 import models.transientModels.StockPrice;
 
@@ -21,7 +20,7 @@ public class ListStockPricesCommand implements Command{
         }
         final StringBuilder result = new StringBuilder("");
         stockPrices.stream().forEach((stockPrice) -> {
-            result.append(stockPrice.getCompanyName() + "       " + stockPrice.getPrice() + "\n");
+            result.append(stockPrice.getCompanyCode() + "       " + stockPrice.getPrice() + "\n");
         });
         return result.toString();
     }
