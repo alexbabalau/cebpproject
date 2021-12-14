@@ -2,6 +2,8 @@ package server.command;
 
 import models.User;
 
+import java.sql.Connection;
+
 public interface Command {
-    String runCommand(User currentUser, String[] args);
+    String runCommand(Connection connection, User currentUser, String[] args);
 }

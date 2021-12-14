@@ -1,12 +1,13 @@
 package server.command;
 
 import dao.CompanyService;
-import dao.CompanyShareService;
 import models.User;
+
+import java.sql.Connection;
 
 public class AddStocksCommand implements Command{
     @Override
-    public String runCommand(User currentUser, String[] args) {
-        return CompanyService.getInstance().addStocks(currentUser, Integer.parseInt(args[1]));
+    public String runCommand(Connection connection, User currentUser, String[] args) {
+        return CompanyService.getInstance().addStocks(connection, currentUser, Integer.parseInt(args[1]));
     }
 }

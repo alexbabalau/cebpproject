@@ -6,7 +6,7 @@ import dao.UserService;
 import models.Transaction;
 import models.User;
 
-import java.sql.SQLException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,13 +15,13 @@ public class ListUserTransactionHistoryCommand implements Command {
     private OrderService orderService = OrderService.getInstance();
     private UserService userService = UserService.getInstance();
 
-    public String runCommand(User currentUser, String[] args) {
+    public String runCommand(Connection connection, User currentUser, String[] args) {
         List<Transaction> transactions = new ArrayList<>();
         Integer userId = 1;
 
         try {
-            transactions = TransactionService.getInstance().getTransactionHistory(args[1]);
-            userId = userService.getIdForUsername(args[1]);
+            transactions = TransactionService.getInstance().getTransactionHistory(connection, args[1]);
+            userId = userService.getIdForUsername(connection, args[1]);
         } catch ( Exception e) {
             return "Error while listing transaction history";
         }

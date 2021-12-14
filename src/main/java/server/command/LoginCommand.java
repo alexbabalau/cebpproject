@@ -4,16 +4,18 @@ import dao.UserService;
 import models.User;
 import server.ClientHandler;
 
+import java.sql.Connection;
+
 public class LoginCommand implements Command{
     private ClientHandler clientHandler;
 
     @Override
-    public String runCommand(User currentUser, String[] args) {
+    public String runCommand(Connection connection, User currentUser, String[] args) {
         String username = args[1];
         UserService userService = UserService.getInstance();
 
         try {
-            currentUser = userService.login(username);
+            currentUser = userService.login(connection, username);
             clientHandler.setCurrentUser(currentUser);
         }
         catch (Exception e) {
