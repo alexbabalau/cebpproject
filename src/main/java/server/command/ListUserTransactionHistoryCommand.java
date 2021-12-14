@@ -1,6 +1,7 @@
 package server.command;
 
 import dao.OrderService;
+import dao.TransactionService;
 import dao.UserService;
 import models.Transaction;
 import models.User;
@@ -19,7 +20,7 @@ public class ListUserTransactionHistoryCommand implements Command {
         Integer userId = 1;
 
         try {
-            transactions = orderService.getTransactionHistory(args[1]);
+            transactions = TransactionService.getInstance().getTransactionHistory(args[1]);
             userId = userService.getIdForUsername(args[1]);
         } catch ( Exception e) {
             return "Error while listing transaction history";

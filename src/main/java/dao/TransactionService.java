@@ -43,7 +43,7 @@ public class TransactionService {
 
     }
 
-    public void insertTransactionWithConnection(Transaction transaction, Connection con) throws SQLException, InterruptedException{
+    public void insertTransaction(Transaction transaction, Connection con) throws SQLException, InterruptedException{
         String insertTransactionSql = "INSERT INTO transaction(buyer_id, seller_id, company_id, number_of_units, price_per_unit, date) VALUES (?, ?, ?, ?, ?, ?)";
         try(PreparedStatement statement = con.prepareStatement(insertTransactionSql)){
             writeLock.acquire();
@@ -64,18 +64,23 @@ public class TransactionService {
     private List<StockPrice> getLastTransactionsWithConnection(Connection con) throws SQLException, InterruptedException{
         List<StockPrice> stockPrices = new ArrayList<>();
         String listStockSql =
-                "SELECT C.id as company_id, C.name as company_name, T.date, T.price_per_unit as price_per_unit FROM transaction T JOIN company C ON T.company_id = C.id " +
+                "SELECT C.id as company_id, C.code as company_code, T.date, T.price_per_unit as price_per_unit FROM transaction T JOIN company C ON T.company_id = C.id " +
                 "WHERE T.date >= ALL(" +
                         "SELECT date FROM transaction " +
-                        "WHERE company_id = C.id)";
+                        "WHERE company_id = C.id)" +
+                        "ORDER BY C.code";
 
         try(PreparedStatement preparedStatement = con.prepareStatement(listStockSql)){
             startRead();
             ResultSet resultSet = preparedStatement.executeQuery();
+            endRead();
             while(resultSet.next()){
+                StockPrice stockPrice = StockPrice.getStockPriceFromResultSet(resultSet);
+                if(stockPrices.size() > 0 && stockPrice.getCompanyCode().equals(stockPrices.get(stockPrices.size() - 1).getCompanyCode()))
+                    continue;
                 stockPrices.add(StockPrice.getStockPriceFromResultSet(resultSet));
             }
-            endRead();
+
         }
         catch (SQLException | InterruptedException ex) {
             throw ex;
@@ -100,5 +105,34 @@ public class TransactionService {
         return stockPrices;
     }
 
+    public List<Transaction> getTransactionHistory(String username) throws SQLException, InterruptedException {
+        List<Transaction> transactions = new ArrayList<>();
+        try (Connection con = DriverManager
+                .getConnection(DB_URL, DB_USER, DB_PASS)) {
+            String sql = "SELECT * FROM transaction " +
+                    "WHERE id IN (" +
+                    "   SELECT T.id from transaction T JOIN User U ON (T.buyer_id = U.id OR T.seller_id = U.id)" +
+                    "       WHERE  U.username = ?)" +
+                    "ORDER BY date;";
+
+            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+                startRead();
+                pstmt.setString(1, username);
+                try (ResultSet resultSet = pstmt.executeQuery()) {
+                    while (resultSet.next()) {
+                        Transaction transaction = Transaction.getTransactionFromResultSet(resultSet);
+                        transactions.add(transaction);
+                    }
+                }
+                endRead();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        } catch (InterruptedException e) {
+            throw e;
+        }
+        return transactions;
+    }
 
 }

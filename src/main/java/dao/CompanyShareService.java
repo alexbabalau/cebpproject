@@ -1,7 +1,6 @@
 package dao;
 
 import exceptions.NegativeBalanceException;
-import exceptions.ResourceNotFoundException;
 import models.CompanyShare;
 
 import java.sql.Connection;
@@ -44,9 +43,9 @@ public class CompanyShareService {
         mutex.release();
     }
 
-    public CompanyShare getCompanyShareByCompanyIdAndOwnerIdForUpdateWithConnection(Integer companyId,
-                                                                                    Integer ownerId,
-                                                                                    Connection connection) throws SQLException, InterruptedException{
+    public CompanyShare getCompanyShareByCompanyIdAndOwnerId(Integer companyId,
+                                                             Integer ownerId,
+                                                             Connection connection) throws SQLException, InterruptedException{
         String sql = "SELECT * FROM company_share where company_id = ? AND owner_id = ?";
         CompanyShare companyShare = null;
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -71,7 +70,7 @@ public class CompanyShareService {
 
     public void addCompanyShares(Integer companyId, Integer ownerId, Integer numberOfUnits, Connection connection) throws SQLException, InterruptedException{
         try{
-            CompanyShare companyShare = getCompanyShareByCompanyIdAndOwnerIdForUpdateWithConnection(companyId, ownerId, connection);
+            CompanyShare companyShare = getCompanyShareByCompanyIdAndOwnerId(companyId, ownerId, connection);
             String sql = "UPDATE company_share SET number_of_units = number_of_units + ? where company_id = ? AND owner_id = ?";
             if(companyShare == null){
                 sql = "INSERT INTO company_share(number_of_units, company_id, owner_id) VALUES(?, ?, ?)";
