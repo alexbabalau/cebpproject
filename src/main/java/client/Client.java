@@ -61,12 +61,9 @@ public class Client {
 
         String bindingKey = "";
 
-        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] Received '" +
-                    delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+            System.out.println("Price update: " + message);
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
@@ -83,7 +80,7 @@ public class Client {
 
     private static void unsubscribeAll() throws IOException{
         for(String companyCode: subscriptions){
-            unsubscribe(companyCode);
+            channel.queueUnbind(queueName, EXCHANGE_NAME, companyCode);
         }
         subscriptions.clear();
     }

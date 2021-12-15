@@ -54,10 +54,13 @@ public class TransactionService {
             statement.setDouble(5, transaction.getPricePerUnit());
             statement.setTimestamp(6, new java.sql.Timestamp(transaction.getDate().getTime()));
             statement.executeUpdate();
-            writeLock.release();
+
         } catch (SQLException | InterruptedException ex) {
             ex.printStackTrace();
             throw ex;
+        }
+        finally {
+            writeLock.release();
         }
     }
 
@@ -69,11 +72,13 @@ public class TransactionService {
                         "SELECT date FROM transaction " +
                         "WHERE company_id = C.id)" +
                         "ORDER BY C.code";
-
+        boolean released = true;
         try(PreparedStatement preparedStatement = con.prepareStatement(listStockSql)){
             startRead();
+            released = false;
             ResultSet resultSet = preparedStatement.executeQuery();
             endRead();
+            released = true;
             while(resultSet.next()){
                 StockPrice stockPrice = StockPrice.getStockPriceFromResultSet(resultSet);
                 if(stockPrices.size() > 0 && stockPrice.getCompanyCode().equals(stockPrices.get(stockPrices.size() - 1).getCompanyCode()))
@@ -84,6 +89,10 @@ public class TransactionService {
         }
         catch (SQLException | InterruptedException ex) {
             throw ex;
+        }
+        finally {
+            if(!released)
+                endRead();
         }
         return stockPrices;
     }
@@ -112,23 +121,30 @@ public class TransactionService {
                 "   SELECT T.id from transaction T JOIN User U ON (T.buyer_id = U.id OR T.seller_id = U.id)" +
                 "       WHERE  U.username = ?)" +
                 "ORDER BY date;";
-
+        boolean released = true;
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             startRead();
+            released = false;
             pstmt.setString(1, username);
             try (ResultSet resultSet = pstmt.executeQuery()) {
+                endRead();
+                released = true;
                 while (resultSet.next()) {
                     Transaction transaction = Transaction.getTransactionFromResultSet(resultSet);
                     transactions.add(transaction);
                 }
             }
-            endRead();
+
         }
         catch (SQLException e) {
             e.printStackTrace();
             throw e;
         } catch (InterruptedException e) {
             throw e;
+        }
+        finally {
+            if(!released)
+                endRead();
         }
         return transactions;
     }

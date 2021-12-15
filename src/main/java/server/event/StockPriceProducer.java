@@ -24,6 +24,7 @@ public class StockPriceProducer implements Runnable{
         java.sql.Connection dbConnection = null;
         try{
             dbConnection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+            dbConnection.setTransactionIsolation(java.sql.Connection.TRANSACTION_READ_UNCOMMITTED);
         }
         catch (SQLException ex){
             ex.printStackTrace();

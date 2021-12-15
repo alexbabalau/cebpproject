@@ -50,7 +50,6 @@ public class UserService {
             pstmt.setInt(2, id);
             pstmt.setDouble(3, amount);
             Integer updatedUsers = pstmt.executeUpdate();
-            writeLock.release();
             if(updatedUsers == 0)
                 throw new NegativeBalanceException("User does not have enough money");
 
@@ -61,6 +60,9 @@ public class UserService {
         }
         catch (InterruptedException e){
             throw e;
+        }
+        finally {
+            writeLock.release();
         }
 
     }
@@ -132,11 +134,14 @@ public class UserService {
                     user = User.getUserFromResultSet(resultSet);
                 }
             }
-            endRead();
+
         }
         catch (SQLException | InterruptedException e){
             e.printStackTrace();
             throw e;
+        }
+        finally {
+            endRead();
         }
 
         return user;
@@ -154,11 +159,14 @@ public class UserService {
                     user = User.getUserFromResultSet(resultSet);
                 }
             }
-            endRead();
+
         }
         catch (SQLException | InterruptedException e){
             e.printStackTrace();
             throw e;
+        }
+        finally {
+            endRead();
         }
 
         return user;
@@ -168,12 +176,15 @@ public class UserService {
         User user = new User(username, 0.0);
         String sql = "INSERT INTO user(username, amount) VALUES(?, ?)";
 
+        boolean released = false;
+
         try(PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             writeLock.acquire();
             pstmt.setString(1, username);
             pstmt.setDouble(2, 0.0);
             Integer insertedCount = pstmt.executeUpdate();
             writeLock.release();
+            released = true;
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     user.setId(generatedKeys.getInt(1));
@@ -185,6 +196,10 @@ public class UserService {
         catch (SQLException | InterruptedException e){
             e.printStackTrace();
             throw e;
+        }
+        finally {
+            if(!released)
+                writeLock.release();
         }
 
         return user;
