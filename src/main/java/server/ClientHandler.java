@@ -1,5 +1,6 @@
 package server;
 
+import com.mysql.cj.jdbc.exceptions.MySQLTransactionRollbackException;
 import models.User;
 import server.command.Command;
 import server.command.CommandFactory;
@@ -25,7 +26,9 @@ public class ClientHandler implements Runnable {
     private static ThreadLocal<Connection> connectionHolder = new ThreadLocal<Connection>(){
         public Connection initialValue(){
             try{
-                return DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+                Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+                connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                return connection;
             }
             catch (SQLException ex){
                 ex.printStackTrace();
@@ -55,7 +58,17 @@ public class ClientHandler implements Runnable {
                     if(command instanceof LoginCommand) {
                         ((LoginCommand) command).setClientHandler(this);
                     }
-                    String response = command.runCommand(getConnection(), currentUser, args);
+                    String response = null;
+                    while(true){
+                        try {
+                            response = command.runCommand(getConnection(), currentUser, args);
+                            break;
+                        }
+                        catch (MySQLTransactionRollbackException ex){
+                            ex.printStackTrace();
+                        }
+                    }
+
                     outputStream.println(response + "\nDone\n");
                 }
                 catch (NoSuchCommandException ex){

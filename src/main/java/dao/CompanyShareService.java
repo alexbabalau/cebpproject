@@ -48,22 +48,29 @@ public class CompanyShareService {
                                                              Connection connection) throws SQLException, InterruptedException{
         String sql = "SELECT * FROM company_share where company_id = ? AND owner_id = ?";
         CompanyShare companyShare = null;
+        boolean released = true;
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             startRead();
+            released = false;
             pstmt.setInt(1, companyId);
             pstmt.setInt(2, ownerId);
             try(ResultSet resultSet = pstmt.executeQuery()){
+                endRead();
+                released = true;
                 if(!resultSet.next()){
-                    endRead();
                     return null;
                 }
                 companyShare = CompanyShare.getCompanyShareFromResultSet(resultSet);
             }
-            endRead();
+
         }
         catch (SQLException | InterruptedException e) {
             e.printStackTrace();
             throw e;
+        }
+        finally {
+            if(!released)
+                endRead();
         }
         return companyShare;
     }
@@ -86,7 +93,6 @@ public class CompanyShareService {
                 pstmt.setInt(2, companyId);
                 pstmt.setInt(3, ownerId);
                 Integer modifiedValues = pstmt.executeUpdate();
-                writeLock.release();
                 if(modifiedValues.equals(0)){
                     throw new SQLException("Company Shares adding failed");
                 }
@@ -96,7 +102,9 @@ public class CompanyShareService {
             ex.printStackTrace();
             throw ex;
         }
-
+        finally {
+            writeLock.release();
+        }
 
     }
 

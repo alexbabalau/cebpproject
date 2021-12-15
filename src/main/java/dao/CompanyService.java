@@ -27,6 +27,7 @@ public class CompanyService {
     public List<String> getCompanyCodes(){
         List<String> codes = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)){
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
             String sql = "SELECT code FROM company";
             try(PreparedStatement statement = connection.prepareStatement(sql)){
                 try(ResultSet resultSet = statement.executeQuery()){
@@ -43,6 +44,9 @@ public class CompanyService {
     }
 
     public String addStocks(Connection connection, User currentUser, Integer numberOfUnits){
+        if(currentUser == null){
+            return "Please login first";
+        }
         try{
             connection.setAutoCommit(false);
             String companyCode = currentUser.getUsername();
