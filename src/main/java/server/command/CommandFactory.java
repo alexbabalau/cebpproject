@@ -27,6 +27,15 @@ public class CommandFactory {
             case "/add-sell-order": {
                 return new AddSellOrderCommand();
             }
+            case "/list-user-orders": {
+                return new ListUserOrdersCommand();
+            }
+            case "/list-user-transaction-history": {
+                return new ListUserTransactionHistoryCommand();
+            }
+            case "/add-buy-order":{
+                return new AddBuyOrderCommand();
+            }
             case "/add-money": {
                 return new AddMoneyCommand();
             }
@@ -35,6 +44,9 @@ public class CommandFactory {
             }
             case "/login": {
                 return new LoginCommand();
+            }
+            case "/add-stocks":{
+                return new AddStocksCommand();
             }
             case "/list-stock-transaction-history": {
                 return new ListStockTransactionHistoryCommand();

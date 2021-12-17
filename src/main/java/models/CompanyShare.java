@@ -28,10 +28,9 @@ public class CompanyShare extends VersionedEntity{
 
     public static CompanyShare getCompanyShareFromResultSet(ResultSet resultSet) throws SQLException {
         CompanyShare companyShare = new CompanyShare();
-        companyShare.setCompanyId(resultSet.getInt("companyId"));
+        companyShare.setCompanyId(resultSet.getInt("company_id"));
         companyShare.setId(resultSet.getInt("id"));
         companyShare.setNumberOfUnits(resultSet.getInt("number_of_units"));
-        companyShare.setVersion(resultSet.getInt("version"));
         return companyShare;
     }
 

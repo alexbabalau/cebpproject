@@ -1,5 +1,7 @@
 package server;
 
+import server.event.StockPriceProducer;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,6 +17,8 @@ public class Server {
     }
 
     private static void run(){
+        Thread eventThread = new Thread(new StockPriceProducer());
+        eventThread.start();
         ExecutorService pool = Executors.newFixedThreadPool(MAX_THREADS);
         try{
             ServerSocket serverSocket = new ServerSocket(8082);

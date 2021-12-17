@@ -2,8 +2,11 @@ package dao;
 
 import exceptions.ResourceNotFoundException;
 import models.Company;
+import models.User;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CompanyService {
 
@@ -21,7 +24,55 @@ public class CompanyService {
 
     }
 
-    public Company findByCodeWithConnection(String code, Connection connection){
+    public List<String> getCompanyCodes(){
+        List<String> codes = new ArrayList<>();
+        try(Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)){
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+            String sql = "SELECT code FROM company";
+            try(PreparedStatement statement = connection.prepareStatement(sql)){
+                try(ResultSet resultSet = statement.executeQuery()){
+                    while (resultSet.next()){
+                        codes.add(resultSet.getString("code"));
+                    }
+                }
+            }
+        }
+        catch(SQLException ex){
+            ex.printStackTrace();
+        }
+        return codes;
+    }
+
+    public String addStocks(Connection connection, User currentUser, Integer numberOfUnits){
+        if(currentUser == null){
+            return "Please login first";
+        }
+        try{
+            connection.setAutoCommit(false);
+            String companyCode = currentUser.getUsername();
+            Company company = null;
+            try{
+                company = findByCodeWithConnection(companyCode, connection);
+            }
+            catch (ResourceNotFoundException e){
+                return "Error " + e.getMessage();
+            }
+            CompanyShareService.getInstance().addCompanyShares(company.getId(), currentUser.getId(), numberOfUnits, connection);
+            connection.commit();
+        }
+        catch (SQLException | InterruptedException e){
+            try{
+                connection.rollback();
+            }
+            catch (SQLException e1){
+                return "Exception encountered: " + e1.getMessage();
+            }
+            return "Exception encountered: " + e.getMessage();
+        }
+        return "Successful";
+    }
+
+    public Company findByCodeWithConnection(String code, Connection connection) throws SQLException{
         String sql = "SELECT * FROM company where code = ?";
         Company company = null;
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -36,13 +87,14 @@ public class CompanyService {
         }
         catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
         return company;
     }
 
-    public Company findByCode(String code){
+    public Company findByCode(Connection connection, String code){
         Company company = null;
-        try(Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS)) {
+        try {
             company = findByCodeWithConnection(code, connection);
         } catch (SQLException throwables) {
             throwables.printStackTrace();

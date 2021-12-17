@@ -1,5 +1,6 @@
 package server;
 
+import com.mysql.cj.jdbc.exceptions.MySQLTransactionRollbackException;
 import models.User;
 import server.command.Command;
 import server.command.CommandFactory;
@@ -8,11 +9,37 @@ import server.command.exceptions.NoSuchCommandException;
 
 import java.io.*;
 import java.net.Socket;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class ClientHandler implements Runnable {
     private Socket socket;
 
     private User currentUser;
+
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/stock-market?useSSL=false";
+    private static final String DB_USER = "stock-market";
+    private static final String DB_PASS = "password";
+
+
+    private static ThreadLocal<Connection> connectionHolder = new ThreadLocal<Connection>(){
+        public Connection initialValue(){
+            try{
+                Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+                connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                return connection;
+            }
+            catch (SQLException ex){
+                ex.printStackTrace();
+                return null;
+            }
+        }
+    };
+
+    private static Connection getConnection(){
+        return connectionHolder.get();
+    }
 
     public ClientHandler(Socket socket){
         this.socket = socket;
@@ -31,7 +58,17 @@ public class ClientHandler implements Runnable {
                     if(command instanceof LoginCommand) {
                         ((LoginCommand) command).setClientHandler(this);
                     }
-                    String response = command.runCommand(currentUser, args);
+                    String response = null;
+                    while(true){
+                        try {
+                            response = command.runCommand(getConnection(), currentUser, args);
+                            break;
+                        }
+                        catch (MySQLTransactionRollbackException ex){
+                            ex.printStackTrace();
+                        }
+                    }
+
                     outputStream.println(response + "\nDone\n");
                 }
                 catch (NoSuchCommandException ex){
@@ -39,11 +76,12 @@ public class ClientHandler implements Runnable {
                 }
                 line = inputStream.readLine();
             }
+            getConnection().close();
             inputStream.close();
             outputStream.close();
             socket.close();
         }
-        catch (IOException ex){
+        catch (IOException | SQLException ex){
             ex.printStackTrace();
         }
     }

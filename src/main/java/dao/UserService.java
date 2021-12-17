@@ -1,8 +1,10 @@
 package dao;
 
+import exceptions.NegativeBalanceException;
 import models.User;
 
 import java.sql.*;
+import java.util.concurrent.Semaphore;
 
 public class UserService {
     private static UserService instance;
@@ -10,6 +12,10 @@ public class UserService {
     private final String DB_URL = "jdbc:mysql://localhost:3306/stock-market?useSSL=false";
     private final String DB_USER = "stock-market";
     private final String DB_PASS = "password";
+
+    private Semaphore mutex = new Semaphore(1, true);
+    private Semaphore writeLock = new Semaphore(1, true);
+    private Integer numberReads = 0;
 
     private UserService(){ }
 
@@ -19,33 +25,58 @@ public class UserService {
         return instance;
     }
 
-    private void updateMoneyWithId(Integer id, Double amount, Connection connection) throws SQLException {
-        String sql = "UPDATE user SET amount = amount + ? WHERE id = ?;";
+    private void startRead() throws InterruptedException{
+        mutex.acquire();
+        numberReads += 1;
+        if(numberReads == 1)
+            writeLock.acquire();
+        mutex.release();
+    }
+
+    private void endRead() throws InterruptedException{
+        mutex.acquire();
+        numberReads -= 1;
+        if(numberReads == 0)
+            writeLock.release();
+        mutex.release();
+    }
+
+    public void updateMoneyWithId(Integer id, Double amount, Connection connection) throws SQLException, InterruptedException {
+        String sql = "UPDATE user SET amount = amount + ? WHERE id = ? AND amount + ? >= 0;";
 
         try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+            writeLock.acquire();
             pstmt.setDouble(1, amount);
             pstmt.setInt(2, id);
-            pstmt.executeUpdate();
+            pstmt.setDouble(3, amount);
+            Integer updatedUsers = pstmt.executeUpdate();
+            if(updatedUsers == 0)
+                throw new NegativeBalanceException("User does not have enough money");
+
         }
         catch (SQLException e){
             e.printStackTrace();
             throw e;
         }
+        catch (InterruptedException e){
+            throw e;
+        }
+        finally {
+            writeLock.release();
+        }
+
     }
 
-    public String addMoney(User user, Double amount) {
-        Connection con = null;
+    public String addMoney(Connection connection, User user, Double amount) {
         Integer userId = user.getId();
-
         try {
-            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
-            updateMoneyWithId(userId, amount, con);
-            con.commit();
-        } catch (SQLException throwables) {
+            connection.setAutoCommit(false);
+            updateMoneyWithId(userId, amount, connection);
+            connection.commit();
+        } catch (SQLException | InterruptedException throwables) {
             throwables.printStackTrace();
             try {
-                con.rollback();
+                connection.rollback();
             } catch (SQLException e) {
                 e.printStackTrace();
                 return "Rollback error";
@@ -56,28 +87,31 @@ public class UserService {
         return "Successful";
     }
 
-    public String withdrawMoney(User user, Double amount) {
-        Connection con = null;
+    public String withdrawMoney(Connection connection, User user, Double amount) {
+
+        if(user == null){
+            return "Please login!";
+        }
+
         Integer userId = user.getId();
 
         try {
-            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
 
-            user = getUserWithId(userId, con);
-            if(user == null) {
-                return "Please login!";
+            connection.setAutoCommit(false);
+
+
+
+            try{
+                updateMoneyWithId(userId, -amount, connection);
             }
-            Double currentMoneyAmount = user.getAmount();
-            if(currentMoneyAmount < amount)
-                return "Not enough money";
-
-            updateMoneyWithId(userId, -amount, con);
-            con.commit();
-        } catch (SQLException throwables) {
+            catch (NegativeBalanceException ex){
+                return "Not enough money!";
+            }
+            connection.commit();
+        } catch (SQLException | InterruptedException throwables) {
             throwables.printStackTrace();
             try {
-                con.rollback();
+                connection.rollback();
             } catch (SQLException e) {
                 e.printStackTrace();
                 return "Rollback error";
@@ -88,52 +122,69 @@ public class UserService {
         return "Successful";
     }
 
-    private User getUserWithId(Integer id, Connection con) {
+    private User getUserWithId(Integer id, Connection con) throws SQLException, InterruptedException{
         String sql = "SELECT * FROM user WHERE id=?";
         User user = null;
 
         try(PreparedStatement pstmt = con.prepareStatement(sql)){
             pstmt.setInt(1, id);
+            startRead();
             try(ResultSet resultSet = pstmt.executeQuery()){
                 while(resultSet.next()){
                     user = User.getUserFromResultSet(resultSet);
                 }
             }
+
         }
-        catch (SQLException e){
+        catch (SQLException | InterruptedException e){
             e.printStackTrace();
+            throw e;
+        }
+        finally {
+            endRead();
         }
 
         return user;
     }
 
-    private User getUserWithUsername(String username, Connection con) {
+    private User getUserWithUsername(String username, Connection con) throws SQLException, InterruptedException {
         String sql = "SELECT * FROM user WHERE username=?";
         User user = null;
 
         try(PreparedStatement pstmt = con.prepareStatement(sql)){
+            startRead();
             pstmt.setString(1, username);
             try(ResultSet resultSet = pstmt.executeQuery()){
                 while(resultSet.next()){
                     user = User.getUserFromResultSet(resultSet);
                 }
             }
+
         }
-        catch (SQLException e){
+        catch (SQLException | InterruptedException e){
             e.printStackTrace();
+            throw e;
+        }
+        finally {
+            endRead();
         }
 
         return user;
     }
 
-    private User createUser(String username, Connection con) throws SQLException {
+    private User createUser(String username, Connection con) throws SQLException, InterruptedException {
         User user = new User(username, 0.0);
         String sql = "INSERT INTO user(username, amount) VALUES(?, ?)";
 
+        boolean released = false;
+
         try(PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+            writeLock.acquire();
             pstmt.setString(1, username);
             pstmt.setDouble(2, 0.0);
             Integer insertedCount = pstmt.executeUpdate();
+            writeLock.release();
+            released = true;
             try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     user.setId(generatedKeys.getInt(1));
@@ -142,32 +193,34 @@ public class UserService {
                 }
             }
         }
-        catch (SQLException e){
+        catch (SQLException | InterruptedException e){
             e.printStackTrace();
             throw e;
+        }
+        finally {
+            if(!released)
+                writeLock.release();
         }
 
         return user;
     }
 
-    public User login(String username) throws Exception{
-        Connection con = null;
+    public User login(Connection connection, String username) throws Exception{
         User user;
 
         try {
-            con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-            con.setAutoCommit(false);
+            connection.setAutoCommit(false);
 
-            user = getUserWithUsername(username, con);
+            user = getUserWithUsername(username, connection);
 
             if(user == null)
-                user = createUser(username, con);
+                user = createUser(username, connection);
 
-            con.commit();
+            connection.commit();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
             try {
-                con.rollback();
+                connection.rollback();
             } catch (SQLException e) {
                 e.printStackTrace();
                 throw e;
@@ -176,6 +229,33 @@ public class UserService {
         }
 
         return user;
+    }
+
+
+    public Integer getIdForUsername(Connection connection, String username) throws Exception{
+        User user;
+
+        try {
+            connection.setAutoCommit(false);
+
+            user = getUserWithUsername(username, connection);
+
+            if(user == null)
+                user = createUser(username, connection);
+
+            connection.commit();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw e;
+            }
+            throw throwables;
+        }
+
+        return user.getId();
     }
 
 }

@@ -40,7 +40,6 @@ public class SellOrder extends VersionedEntity{
         sellOrder.setOwnerId(resultSet.getInt("owner_id"));
         sellOrder.setNumberOfUnits(resultSet.getInt("number_of_units"));
         sellOrder.setPricePerUnit(resultSet.getDouble("price_per_unit"));
-        sellOrder.setVersion(resultSet.getInt("version"));
 
         return sellOrder;
     }
