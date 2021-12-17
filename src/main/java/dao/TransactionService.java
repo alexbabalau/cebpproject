@@ -75,8 +75,22 @@ public class TransactionService {
         return stockPrices;
     }
 
-    private List<Transaction> getTransactionsByCompanyIdWithConnection(Connection con) throws SQLException {
+    private List<Transaction> getTransactionsByCompanyIdWithConnection(Connection con, Integer id) throws SQLException {
         List<Transaction> transactions = new ArrayList<>();
+        String listTransactionsSql =
+                "SELECT * FROM transaction WHERE company_id = ?";
+
+        try(PreparedStatement preparedStatement = con.prepareStatement(listTransactionsSql)){
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                transactions.add(Transaction.getTransactionFromResultSet(resultSet));
+            }
+        }
+        catch (SQLException ex) {
+            throw ex;
+        }
+
         return transactions;
     }
 
@@ -86,7 +100,7 @@ public class TransactionService {
         try {
             con = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
             con.setAutoCommit(false);
-            transactions = getTransactionsByCompanyIdWithConnection(con); // TODO
+            transactions = getTransactionsByCompanyIdWithConnection(con, id);
             con.commit();
         }
         catch (SQLException ex) {

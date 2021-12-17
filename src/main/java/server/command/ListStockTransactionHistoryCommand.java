@@ -17,13 +17,16 @@ public class ListStockTransactionHistoryCommand implements Command {
     @Override
     public String runCommand(User currentUser, String[] args) {
         Company company = companyService.findByCode(args[1]);
-
         List<Transaction> transactions;
+
+        if(company == null) {
+            return "Company_code is not valid\n";
+        }
 
         try {
             transactions = transactionService.getTransactionsByCompanyId(company.getId());
         } catch (SQLException ex) {
-            return "Error in listing transaction history : " + ex.getMessage();
+            return "Error in listing transaction history : " + ex.getMessage() + "\n";
         }
 
         StringBuilder result = new StringBuilder();
