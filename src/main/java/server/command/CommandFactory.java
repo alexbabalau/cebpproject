@@ -48,6 +48,15 @@ public class CommandFactory {
             case "/add-stocks":{
                 return new AddStocksCommand();
             }
+            case "/list-stock-transaction-history": {
+                return new ListStockTransactionHistoryCommand();
+            }
+            case "/cancel-buy-order": {
+                return new CancelBuyOrderCommand();
+            }
+            case "/cancel-sell-order": {
+                return new CancelSellOrderCommand();
+            }
             default:
                 throw new NoSuchCommandException();
         }

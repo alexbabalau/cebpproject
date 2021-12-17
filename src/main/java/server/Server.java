@@ -24,7 +24,7 @@ public class Server {
             ServerSocket serverSocket = new ServerSocket(8082);
             while (true){
                 Socket socket = serverSocket.accept();
-                System.out.print("Socket connected to the server");
+                System.out.print("Socket connected to the server\n");
                 Runnable clientHandler = new ClientHandler(socket);
                 pool.execute(clientHandler);
             }
