@@ -12,7 +12,7 @@ public class CancelBuyOrderCommand implements Command {
     @Override
     public String runCommand(Connection con, User currentUser, String[] args) {
         try {
-            orderService.deleteBuyOrderWithId(Integer.getInteger(args[1]), con);
+            orderService.deleteBuyOrderWithId(Integer.parseInt(args[1]), con);
         } catch(SQLException | InterruptedException ex) {
             return "Error in deleting buy order : " + ex.getMessage() + "\n";
         }

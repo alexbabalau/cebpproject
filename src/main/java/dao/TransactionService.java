@@ -152,7 +152,8 @@ public class TransactionService {
     private List<Transaction> getTransactionsByCompanyIdWithConnection(Connection con, Integer id) throws SQLException {
         List<Transaction> transactions = new ArrayList<>();
         String listTransactionsSql =
-                "SELECT * FROM transaction WHERE company_id = ?";
+                "SELECT * FROM transaction WHERE company_id = ? " +
+                        "ORDER BY date;";
 
         try(PreparedStatement preparedStatement = con.prepareStatement(listTransactionsSql)){
             preparedStatement.setInt(1, id);

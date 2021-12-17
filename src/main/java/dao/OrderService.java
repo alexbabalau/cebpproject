@@ -228,6 +228,7 @@ public class OrderService {
         String sql = "DELETE FROM buy_order WHERE id = ?";
         try(PreparedStatement pstmt = connection.prepareStatement(sql)){
             buyWriteLock.acquire();
+            System.out.println(pstmt);
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
         }

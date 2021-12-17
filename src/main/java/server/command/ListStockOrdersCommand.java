@@ -27,12 +27,12 @@ public class ListStockOrdersCommand implements Command {
 
         result.append("SELL ORDERS\n");
         for (SellOrder sellOrder : sellOrders) {
-            result.append("User ID: " + sellOrder.getOwnerId() + ", Price: " + sellOrder.getPricePerUnit() + ", Shares: " + sellOrder.getNumberOfUnits() + "\n");
+            result.append("ID: " + sellOrder.getId() + ", User ID: " + sellOrder.getOwnerId() + ", Price: " + sellOrder.getPricePerUnit() + ", Shares: " + sellOrder.getNumberOfUnits() + "\n");
         }
 
         result.append("\nBUY ORDERS\n");
         for (BuyOrder buyOrder : buyOrders) {
-            result.append("User ID: " + buyOrder.getOwnerId() + ", Price: " + buyOrder.getPricePerUnit() + ", Shares: " + buyOrder.getNumberOfUnits() + "\n");
+            result.append("ID: " + buyOrder.getId() + ", User ID: " + buyOrder.getOwnerId() + ", Price: " + buyOrder.getPricePerUnit() + ", Shares: " + buyOrder.getNumberOfUnits() + "\n");
         }
 
 
