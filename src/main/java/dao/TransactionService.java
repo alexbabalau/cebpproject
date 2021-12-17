@@ -149,4 +149,39 @@ public class TransactionService {
         return transactions;
     }
 
+    private List<Transaction> getTransactionsByCompanyIdWithConnection(Connection con, Integer id) throws SQLException {
+        List<Transaction> transactions = new ArrayList<>();
+        String listTransactionsSql =
+                "SELECT * FROM transaction WHERE company_id = ?";
+
+        try(PreparedStatement preparedStatement = con.prepareStatement(listTransactionsSql)){
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                transactions.add(Transaction.getTransactionFromResultSet(resultSet));
+            }
+        }
+        catch (SQLException ex) {
+            throw ex;
+        }
+
+        return transactions;
+    }
+
+    public List<Transaction> getTransactionsByCompanyId(Connection con, Integer id) throws SQLException{
+        List<Transaction> transactions = null;
+        try {
+            con.setAutoCommit(false);
+            transactions = getTransactionsByCompanyIdWithConnection(con, id);
+            con.commit();
+        }
+        catch (SQLException ex) {
+            if(con != null)
+                con.rollback();
+            throw ex;
+        }
+
+        return transactions;
+    }
+
 }

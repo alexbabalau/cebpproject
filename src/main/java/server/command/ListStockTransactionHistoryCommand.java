@@ -6,6 +6,7 @@ import models.Company;
 import models.Transaction;
 import models.User;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -15,8 +16,8 @@ public class ListStockTransactionHistoryCommand implements Command {
     private TransactionService transactionService = TransactionService.getInstance();
 
     @Override
-    public String runCommand(User currentUser, String[] args) {
-        Company company = companyService.findByCode(args[1]);
+    public String runCommand(Connection con, User currentUser, String[] args) {
+        Company company = companyService.findByCode(con, args[1]);
         List<Transaction> transactions;
 
         if(company == null) {
@@ -24,7 +25,7 @@ public class ListStockTransactionHistoryCommand implements Command {
         }
 
         try {
-            transactions = transactionService.getTransactionsByCompanyId(company.getId());
+            transactions = transactionService.getTransactionsByCompanyId(con, company.getId());
         } catch (SQLException ex) {
             return "Error in listing transaction history : " + ex.getMessage() + "\n";
         }
