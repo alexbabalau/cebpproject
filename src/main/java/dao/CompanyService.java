@@ -102,4 +102,24 @@ public class CompanyService {
         return company;
     }
 
+    public Company findByIdWithConnection(Integer id, Connection connection) throws SQLException{
+        String sql = "SELECT * FROM company where id = ?";
+        Company company = null;
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try(ResultSet resultSet = pstmt.executeQuery()){
+                if(!resultSet.next()){
+                    throw new ResourceNotFoundException("Company not found");
+                }
+                company = Company.getCompanyFromResultSet(resultSet);
+            }
+
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+        return company;
+    }
+
 }

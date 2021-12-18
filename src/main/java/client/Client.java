@@ -95,6 +95,9 @@ public class Client {
 
             while(scanner.hasNextLine()){
                 String line = scanner.nextLine();
+                if(line.trim().length() == 0){
+                    continue;
+                }
                 outputStream.println(line);
                 if(line.equals("/quit"))
                     break;

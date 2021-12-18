@@ -1,6 +1,7 @@
 package dao;
 
 import exceptions.NegativeBalanceException;
+import exceptions.ResourceNotFoundException;
 import models.*;
 import server.command.exceptions.NotEnoughUnitsException;
 
@@ -224,25 +225,7 @@ public class OrderService {
         buyMutex.release();
     }
 
-    public void deleteBuyOrderWithId(Integer id, Connection connection) throws SQLException, InterruptedException{
-        String sql = "DELETE FROM buy_order WHERE id = ?";
-        try(PreparedStatement pstmt = connection.prepareStatement(sql)){
-            buyWriteLock.acquire();
-            System.out.println(pstmt);
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-        }
-        catch (SQLException e){
-            e.printStackTrace();
-            throw e;
-        }
-        catch (InterruptedException e){
-            throw e;
-        }
-        finally {
-            buyWriteLock.release();
-        }
-    }
+
 
     public void updateBuyOrderWithIdWithConnection(Integer id, BuyOrder buyOrder, Connection connection) throws SQLException, InterruptedException{
         String sql = "UPDATE buy_order SET number_of_units = ?, price_per_unit = ? WHERE id = ?";
@@ -265,24 +248,63 @@ public class OrderService {
         }
     }
 
-    public void deleteSellOrderWithId(Integer id, Connection connection)throws SQLException, InterruptedException{
-        String sql = "DELETE FROM sell_order WHERE id = ?";
-        try(PreparedStatement pstmt = connection.prepareStatement(sql)){
-            sellWriteLock.acquire();
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
+    private String findSellOrderCompanyCodeById(Integer id, Connection connection) throws SQLException, InterruptedException{
+        boolean released = true;
+        try{
+            String sql = "SELECT C.code as code FROM sell_order S JOIN company C " +
+                    "WHERE S.id = ?";
+            startSellRead();
+            released = false;
+            try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+                pstmt.setInt(1, id);
+                try(ResultSet resultSet = pstmt.executeQuery()){
+                    endSellRead();
+                    released = true;
+                    if(!resultSet.next())
+                        return null;
+                    return resultSet.getString("code");
+                }
+            }
         }
-        catch (SQLException e){
-            e.printStackTrace();
-            throw e;
-        }
-        catch (InterruptedException e){
-            throw e;
+        catch (SQLException | InterruptedException ex){
+            throw ex;
         }
         finally {
-            sellWriteLock.release();
+            if(!released)
+                endSellRead();
         }
+
     }
+
+    private String findBuyOrderCompanyCodeById(Integer id, Connection connection) throws SQLException, InterruptedException{
+        boolean released = true;
+        try{
+            String sql = "SELECT C.code as code FROM buy_order S JOIN company C " +
+                    "WHERE S.id = ?";
+            startBuyRead();
+            released = false;
+            try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+                pstmt.setInt(1, id);
+                try(ResultSet resultSet = pstmt.executeQuery()){
+                    endBuyRead();
+                    released = true;
+                    if(!resultSet.next())
+                        return null;
+                    return resultSet.getString("code");
+                }
+            }
+        }
+        catch (SQLException | InterruptedException ex){
+            throw ex;
+        }
+        finally {
+            if(!released)
+                endBuyRead();
+        }
+
+    }
+
+
 
     public void updateSellOrderWithIdWithConnection(Integer id, SellOrder sellOrder, Connection connection) throws SQLException, InterruptedException{
         String sql = "UPDATE sell_order SET number_of_units = ?, price_per_unit = ? WHERE id = ?";
@@ -473,6 +495,59 @@ public class OrderService {
 
             return "Successful";
         }
+    }
+
+    public void deleteBuyOrderWithId(Integer id, Connection connection) throws SQLException, InterruptedException{
+        String code = findBuyOrderCompanyCodeById(id, connection);
+        if(code == null){
+            throw new ResourceNotFoundException("Buy order not found");
+        }
+        synchronized (companyLocks.get(code)){
+            String sql = "DELETE FROM buy_order WHERE id = ?";
+            try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+                buyWriteLock.acquire();
+                System.out.println(pstmt);
+                pstmt.setInt(1, id);
+                pstmt.executeUpdate();
+            }
+            catch (SQLException e){
+                e.printStackTrace();
+                throw e;
+            }
+            catch (InterruptedException e){
+                throw e;
+            }
+            finally {
+                buyWriteLock.release();
+            }
+        }
+    }
+
+    public void deleteSellOrderWithId(Integer id, Connection connection)throws SQLException, InterruptedException{
+
+        String code = findSellOrderCompanyCodeById(id, connection);
+        if(code == null){
+            throw new ResourceNotFoundException("Sell order not found");
+        }
+        synchronized (companyLocks.get(code)){
+            String sql = "DELETE FROM sell_order WHERE id = ?";
+            try(PreparedStatement pstmt = connection.prepareStatement(sql)){
+                sellWriteLock.acquire();
+                pstmt.setInt(1, id);
+                pstmt.executeUpdate();
+            }
+            catch (SQLException e){
+                e.printStackTrace();
+                throw e;
+            }
+            catch (InterruptedException e){
+                throw e;
+            }
+            finally {
+                sellWriteLock.release();
+            }
+        }
+
     }
 
     private List<SellOrder> getSellOrdersLessThanFromCompanyIdForUpdateWithConnection(Integer companyId, Double maxPrice, Connection connection) throws SQLException, InterruptedException {
